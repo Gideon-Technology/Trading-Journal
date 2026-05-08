@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { v4 as uuid } from 'uuid';
 import { format } from 'date-fns';
 import { calculateQualityScore } from '@forex-journal/shared';
-import type { Trade, Session, Direction, SetupType, MarketCondition, Outcome } from '@forex-journal/shared';
+import type { Trade, Session, Direction, SetupType, MarketCondition, Outcome, AssetClass } from '@forex-journal/shared';
 import { addTrade, getTrades, exportToJSON } from './storage';
 
 const S = {
@@ -28,12 +28,23 @@ const css = {
 
 type Tab = 'entry' | 'checklist' | 'history';
 
-const PAIRS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD'];
-const SESSIONS: Session[] = ['Asian', 'London', 'New York', 'London-NY Overlap'];
+const INSTRUMENTS: Record<AssetClass, string[]> = {
+  Forex: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD', 'XAG/USD', 'Other'],
+  Futures: ['ES (S&P 500)', 'NQ (Nasdaq 100)', 'YM (Dow Jones)', 'RTY (Russell 2000)', 'MES (Micro S&P)', 'MNQ (Micro Nasdaq)', 'CL (Crude Oil)', 'GC (Gold)', 'SI (Silver)', 'NG (Natural Gas)', 'ZB (30yr Bond)', 'ZN (10yr Note)', '6E (Euro)', '6B (British Pound)', 'Other'],
+  Crypto: ['BTC/USD', 'ETH/USD', 'SOL/USD', 'BNB/USD', 'XRP/USD', 'ADA/USD', 'DOGE/USD', 'Other'],
+};
+
+const SESSIONS_BY_CLASS: Record<AssetClass, Session[]> = {
+  Forex: ['Asian', 'London', 'New York', 'London-NY Overlap'],
+  Futures: ['Pre-Market', 'Regular Hours', 'After Hours', 'Asian', 'London', 'New York'],
+  Crypto: ['Asian', 'London', 'New York', 'London-NY Overlap'],
+};
+
 const SETUPS: SetupType[] = ['Liquidity Sweep + FVG', 'Break & Retest', 'S/R Retest', 'Trendline Retest', 'FVG Only', 'Other'];
 
 const defaultEntry = {
   date: format(new Date(), 'yyyy-MM-dd'),
+  assetClass: 'Forex' as AssetClass,
   session: 'London' as Session,
   pair: 'EUR/USD',
   direction: 'BUY' as Direction,
@@ -89,6 +100,7 @@ function Popup() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       date: entry.date,
+      assetClass: entry.assetClass,
       session: entry.session,
       pair: entry.pair,
       direction: entry.direction,
@@ -211,6 +223,19 @@ function Popup() {
       {/* Entry tab */}
       {tab === 'entry' && (
         <div>
+          {/* Asset class selector */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+            {(['Forex', 'Futures', 'Crypto'] as AssetClass[]).map(a => (
+              <button key={a} onClick={() => { se('assetClass', a); se('pair', INSTRUMENTS[a][0]); se('session', SESSIONS_BY_CLASS[a][0]); }}
+                style={{ flex: 1, padding: '5px', borderRadius: 5, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                  background: entry.assetClass === a ? S.accent : S.elevated,
+                  color: entry.assetClass === a ? '#fff' : S.muted,
+                  border: `1px solid ${entry.assetClass === a ? S.accent : S.border}` }}>
+                {a === 'Forex' ? '💱 Forex' : a === 'Futures' ? '📊 Futures' : '₿ Crypto'}
+              </button>
+            ))}
+          </div>
+
           <div style={css.card}>
             <div style={{ padding: '10px 12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <div>
@@ -220,13 +245,13 @@ function Popup() {
               <div>
                 <label style={css.label}>Session</label>
                 <select style={css.select} value={entry.session} onChange={e => se('session', e.target.value as Session)}>
-                  {SESSIONS.map(s => <option key={s}>{s}</option>)}
+                  {SESSIONS_BY_CLASS[entry.assetClass].map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
               <div>
-                <label style={css.label}>Pair</label>
+                <label style={css.label}>Instrument</label>
                 <select style={css.select} value={entry.pair} onChange={e => se('pair', e.target.value)}>
-                  {PAIRS.map(p => <option key={p}>{p}</option>)}
+                  {INSTRUMENTS[entry.assetClass].map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <div>

@@ -1,8 +1,9 @@
-export type Session = 'Asian' | 'London' | 'New York' | 'London-NY Overlap';
-export type Direction = 'BUY' | 'SELL';
+export type Session = 'Asian' | 'London' | 'New York' | 'London-NY Overlap' | 'Pre-Market' | 'Regular Hours' | 'After Hours';
+export type Direction = 'BUY' | 'SELL' | 'LONG' | 'SHORT';
 export type MarketCondition = 'Trending' | 'Ranging' | 'Reversal' | 'Breakout';
 export type Outcome = 'WIN' | 'LOSS' | 'BREAKEVEN';
 export type PlanAdherence = 'YES' | 'MOSTLY' | 'NO';
+export type AssetClass = 'Forex' | 'Futures' | 'Crypto';
 
 export type SetupType =
   | 'Liquidity Sweep + FVG'
@@ -98,6 +99,7 @@ export interface Trade {
   // Trade information
   date: string;
   session: Session;
+  assetClass: AssetClass;
   pair: string;
   analysisTimeframe: string;
   entryTimeframe: string;

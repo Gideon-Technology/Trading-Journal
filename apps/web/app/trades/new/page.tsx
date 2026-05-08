@@ -6,11 +6,35 @@ import { useJournalStore } from '@/lib/store';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
-import type { Trade, Session, Direction, MarketCondition, SetupType, Outcome, PlanAdherence } from '@forex-journal/shared';
+import type { Trade, Session, Direction, MarketCondition, SetupType, Outcome, PlanAdherence, AssetClass } from '@forex-journal/shared';
 
 const STEPS = ['Trade Info', 'Pre-Trade', 'Entry', 'Management', 'Result', 'Psychology', 'Mistakes'];
 
-const PAIRS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD', 'Other'];
+const INSTRUMENTS: Record<AssetClass, string[]> = {
+  Forex: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD', 'XAG/USD', 'Other'],
+  Futures: [
+    // Index
+    'ES (S&P 500)', 'NQ (Nasdaq 100)', 'YM (Dow Jones)', 'RTY (Russell 2000)', 'MES (Micro S&P)', 'MNQ (Micro Nasdaq)',
+    // Energy
+    'CL (Crude Oil)', 'NG (Natural Gas)', 'RB (RBOB Gasoline)', 'HO (Heating Oil)',
+    // Metals
+    'GC (Gold)', 'SI (Silver)', 'HG (Copper)', 'PL (Platinum)',
+    // Bonds
+    'ZB (30yr Bond)', 'ZN (10yr Note)', 'ZF (5yr Note)', 'ZT (2yr Note)',
+    // Currencies
+    '6E (Euro)', '6B (British Pound)', '6J (Japanese Yen)', '6A (Aussie)', '6C (Canadian)',
+    // Agricultural
+    'ZC (Corn)', 'ZW (Wheat)', 'ZS (Soybeans)', 'Other',
+  ],
+  Crypto: ['BTC/USD', 'ETH/USD', 'SOL/USD', 'BNB/USD', 'XRP/USD', 'ADA/USD', 'DOGE/USD', 'Other'],
+};
+
+const SESSIONS_BY_CLASS: Record<AssetClass, Session[]> = {
+  Forex: ['Asian', 'London', 'New York', 'London-NY Overlap'],
+  Futures: ['Pre-Market', 'Regular Hours', 'After Hours', 'Asian', 'London', 'New York'],
+  Crypto: ['Asian', 'London', 'New York', 'London-NY Overlap'],
+};
+
 const TIMEFRAMES = ['1M', '5M', '15M', '30M', '1H', '4H', '1D', '1W'];
 
 function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
@@ -77,6 +101,7 @@ function CheckItem({ label, checked, onChange }: { label: string; checked: boole
 const defaultForm = {
   // Info
   date: new Date().toISOString().split('T')[0],
+  assetClass: 'Forex' as AssetClass,
   session: 'London' as Session,
   pair: 'EUR/USD',
   analysisTimeframe: '4H',
@@ -150,6 +175,7 @@ export default function NewTrade() {
   const handleSubmit = () => {
     const trade = addTrade({
       ...form,
+      assetClass: form.assetClass,
       entryPrice: parseFloat(form.entryPrice as string) || 0,
       stopLoss: parseFloat(form.stopLoss as string) || 0,
       tp1: parseFloat(form.tp1 as string) || 0,
@@ -194,15 +220,29 @@ export default function NewTrade() {
         <Card>
           <CardHeader><p className="font-semibold text-sm">Trade Information</p></CardHeader>
           <CardBody className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <Field label="Asset Class" required>
+                <div className="flex gap-2">
+                  {(['Forex', 'Futures', 'Crypto'] as AssetClass[]).map(a => (
+                    <button key={a} onClick={() => { set('assetClass', a); set('pair', INSTRUMENTS[a][0]); set('session', SESSIONS_BY_CLASS[a][0]); }}
+                      className={cn('flex-1 py-2 rounded text-sm font-semibold transition-colors',
+                        form.assetClass === a ? 'bg-accent text-white' : 'bg-bg-elevated text-muted border border-bg-border'
+                      )}>
+                      {a === 'Forex' ? '💱 Forex' : a === 'Futures' ? '📊 Futures' : '₿ Crypto'}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            </div>
             <Field label="Date" required><Input type="date" value={form.date} onChange={e => set('date', e.target.value)} /></Field>
             <Field label="Session" required>
               <Select value={form.session} onChange={e => set('session', e.target.value as Session)}>
-                {['Asian', 'London', 'New York', 'London-NY Overlap'].map(s => <option key={s}>{s}</option>)}
+                {SESSIONS_BY_CLASS[form.assetClass].map(s => <option key={s}>{s}</option>)}
               </Select>
             </Field>
-            <Field label="Currency Pair" required>
+            <Field label="Instrument" required>
               <Select value={form.pair} onChange={e => set('pair', e.target.value)}>
-                {PAIRS.map(p => <option key={p}>{p}</option>)}
+                {INSTRUMENTS[form.assetClass].map(p => <option key={p}>{p}</option>)}
               </Select>
             </Field>
             <Field label="Direction" required>
