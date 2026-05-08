@@ -3,7 +3,7 @@ import './globals.css';
 import { Nav } from '@/components/Nav';
 
 export const metadata: Metadata = {
-  title: 'FX Journal — Professional Forex Trading Journal',
+  title: 'G-Trade — Professional Forex Trading Journal',
   description: 'Track, review, and improve your forex trading performance.',
 };
 

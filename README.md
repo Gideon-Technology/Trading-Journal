@@ -1,4 +1,4 @@
-# FX Journal — Professional Forex Trading Journal
+# G-Trade — Professional Forex Trading Journal
 
 A full-stack forex trading journal built for traders who trade with market structure, liquidity sweeps, Fair Value Gaps, break and retest, and session timing. Log trades, track psychology, review performance, and export your data.
 

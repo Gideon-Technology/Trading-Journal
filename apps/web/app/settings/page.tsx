@@ -139,7 +139,7 @@ export default function Settings() {
       <Card>
         <CardHeader><p className="font-semibold text-sm">About</p></CardHeader>
         <CardBody className="text-sm text-muted space-y-1">
-          <p>FX Journal — Professional Forex Trading Journal</p>
+          <p>G-Trade — Professional Forex Trading Journal</p>
           <p>Built with Next.js 14 · TypeScript · Tailwind CSS · Recharts · Zustand</p>
           <p>All data stored locally in your browser via localStorage. No account required.</p>
           <p className="text-xs pt-2">Strategy: Liquidity Sweep → FVG → S/R Retest → Rejection Candle → Entry after candle close</p>

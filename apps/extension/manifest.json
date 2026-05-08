@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "FX Journal",
-  "description": "Professional Forex Trading Journal — log trades while your broker is open",
+  "name": "G-Trade",
+  "description": "G-Trade — Professional Forex Trading Journal. Log trades while your broker is open.",
   "version": "1.0.0",
   "action": {
     "default_popup": "popup.html",

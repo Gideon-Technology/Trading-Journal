@@ -24,7 +24,7 @@ export function Nav() {
         <div className="flex items-center gap-2">
           <span className="text-accent text-xl">📈</span>
           <div>
-            <p className="text-text font-semibold text-sm leading-tight">FX Journal</p>
+            <p className="text-text font-semibold text-sm leading-tight">G-Trade</p>
             <p className="text-muted text-xs">Pro Trading Journal</p>
           </div>
         </div>

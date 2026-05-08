@@ -143,7 +143,7 @@ function Popup() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 18 }}>📈</span>
           <div>
-            <p style={{ color: S.text, fontWeight: 700, fontSize: 13 }}>FX Journal</p>
+            <p style={{ color: S.text, fontWeight: 700, fontSize: 13 }}>G-Trade</p>
             <p style={{ color: S.muted, fontSize: 10 }}>{trades.length} trades saved</p>
           </div>
         </div>
