@@ -24,6 +24,13 @@ body {
   background-color: var(--bg-base);
   color: #E6EDF3;
   font-family: 'Inter', system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Mobile table scroll */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom scrollbar */

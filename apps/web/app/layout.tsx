@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Nav } from '@/components/Nav';
+import { Shell } from '@/components/Shell';
 
 export const metadata: Metadata = {
   title: 'G-Trade — Professional Forex Trading Journal',
@@ -10,13 +10,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-bg-base text-text min-h-screen">
-        <Nav />
-        <main className="ml-56 min-h-screen">
-          <div className="max-w-7xl mx-auto px-6 py-6">
-            {children}
-          </div>
-        </main>
+      <body className="bg-bg-base text-text">
+        <Shell>{children}</Shell>
       </body>
     </html>
   );
