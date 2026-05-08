@@ -9,7 +9,7 @@ import { formatCurrency, outcomeBg, scoreBg } from '@/lib/utils';
 const PAIRS = ['All', 'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD', 'Other'];
 const OUTCOMES = ['All', 'WIN', 'LOSS', 'BREAKEVEN'];
 const SESSIONS = ['All', 'Asian', 'London', 'New York', 'London-NY Overlap'];
-const DIRECTIONS = ['All', 'BUY', 'SELL'];
+const DIRECTIONS = ['All', 'LONG', 'SHORT'];
 
 export default function TradeHistory() {
   const { trades, deleteTrade } = useJournalStore();
@@ -90,7 +90,7 @@ export default function TradeHistory() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-muted text-xs border-b border-bg-border bg-bg-elevated">
-                  {['Date', 'Pair', 'Dir', 'Setup', 'Session', 'Entry', 'SL', 'TP3', 'Lot', 'Outcome', 'P&L $', 'Pips', 'RR', 'Score', ''].map(h => (
+                  {['Date', 'Pair', 'Dir', 'Setup', 'Session', 'Entry', 'SL', 'TP3', 'Lot', 'Outcome', 'P&L $', 'Points', 'RR', 'Score', ''].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-medium whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -101,22 +101,22 @@ export default function TradeHistory() {
                     <td className="px-4 py-3 text-muted text-xs font-mono whitespace-nowrap">{t.date}</td>
                     <td className="px-4 py-3 font-semibold whitespace-nowrap">{t.pair}</td>
                     <td className="px-4 py-3">
-                      <span className={t.direction === 'BUY' ? 'text-win text-xs font-mono font-bold' : 'text-loss text-xs font-mono font-bold'}>{t.direction}</span>
+                      <span className={t.direction === 'BUY' || direction === 'LONG' ? 'text-win text-xs font-mono font-bold' : 'text-loss text-xs font-mono font-bold'}>{t.direction}</span>
                     </td>
                     <td className="px-4 py-3 text-muted text-xs whitespace-nowrap">{t.setupType}</td>
                     <td className="px-4 py-3 text-muted text-xs whitespace-nowrap">{t.session}</td>
                     <td className="px-4 py-3 font-mono text-xs">{t.entryPrice}</td>
                     <td className="px-4 py-3 font-mono text-xs text-loss">{t.stopLoss}</td>
                     <td className="px-4 py-3 font-mono text-xs text-win">{t.tp3}</td>
-                    <td className="px-4 py-3 font-mono text-xs">{t.lotSize}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{t.positionSize}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${outcomeBg(t.outcome)}`}>{t.outcome}</span>
                     </td>
                     <td className={`px-4 py-3 font-mono text-xs font-semibold ${t.profitLossDollar >= 0 ? 'text-win' : 'text-loss'}`}>
                       {formatCurrency(t.profitLossDollar)}
                     </td>
-                    <td className={`px-4 py-3 font-mono text-xs ${t.profitLossPips >= 0 ? 'text-win' : 'text-loss'}`}>
-                      {t.profitLossPips > 0 ? '+' : ''}{t.profitLossPips}
+                    <td className={`px-4 py-3 font-mono text-xs ${t.profitLossPoints >= 0 ? 'text-win' : 'text-loss'}`}>
+                      {t.profitLossPoints > 0 ? '+' : ''}{t.profitLossPoints}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs">{t.rrAchieved?.toFixed(1)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">

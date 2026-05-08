@@ -124,14 +124,14 @@ export default function Analytics() {
         <StatCard label="Total Trades" value={stats.totalTrades} />
         <StatCard label="Win Rate" value={`${stats.winRate.toFixed(1)}%`} valueClass={stats.winRate >= 50 ? 'text-win' : 'text-loss'} />
         <StatCard label="Total P&L" value={formatCurrency(stats.totalPnlDollar)} valueClass={stats.totalPnlDollar >= 0 ? 'text-win' : 'text-loss'} />
-        <StatCard label="Total Pips" value={`${stats.totalPnlPips >= 0 ? '+' : ''}${stats.totalPnlPips.toFixed(1)}`} valueClass={stats.totalPnlPips >= 0 ? 'text-win' : 'text-loss'} />
+        <StatCard label="Total Points" value={`${stats.totalPnlPoints >= 0 ? '+' : ''}${stats.totalPnlPoints.toFixed(1)}`} valueClass={stats.totalPnlPoints >= 0 ? 'text-win' : 'text-loss'} />
         <StatCard label="Avg R:R" value={stats.avgRR.toFixed(2)} />
         <StatCard label="Avg Quality" value={`${stats.avgQualityScore.toFixed(1)}/10`} valueClass="text-accent" />
       </div>
 
       {/* Row: Pair P&L + Session */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Section title="P&L by Currency Pair">
+        <Section title="P&L by Instrument">
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={pairStats} layout="vertical" barSize={14}>
               <CartesianGrid strokeDasharray="3 3" stroke="#21262D" />

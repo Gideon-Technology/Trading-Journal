@@ -47,7 +47,7 @@ export default function TradeDetail() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-xl font-bold">{trade.pair}</h1>
-            <span className={trade.direction === 'BUY' ? 'text-win font-mono font-bold' : 'text-loss font-mono font-bold'}>
+            <span className={trade.direction === 'BUY' || trade.direction === 'LONG' ? 'text-win font-mono font-bold' : 'text-loss font-mono font-bold'}>
               {trade.direction}
             </span>
             <span className={`px-2 py-0.5 rounded text-xs font-medium ${outcomeBg(trade.outcome)}`}>{trade.outcome}</span>
@@ -85,7 +85,7 @@ export default function TradeDetail() {
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: 'P&L ($)', value: formatCurrency(trade.profitLossDollar), cls: trade.profitLossDollar >= 0 ? 'text-win' : 'text-loss' },
-          { label: 'P&L (pips)', value: `${trade.profitLossPips > 0 ? '+' : ''}${trade.profitLossPips}`, cls: trade.profitLossPips >= 0 ? 'text-win' : 'text-loss' },
+          { label: 'P&L (pts)', value: `${trade.profitLossPoints > 0 ? '+' : ''}${trade.profitLossPoints}`, cls: trade.profitLossPoints >= 0 ? 'text-win' : 'text-loss' },
           { label: 'RR Achieved', value: `${trade.rrAchieved?.toFixed(1)}:1`, cls: 'text-accent' },
           { label: 'Risk %', value: `${trade.riskPercent}%`, cls: 'text-text' },
         ].map(s => (
@@ -117,7 +117,7 @@ export default function TradeDetail() {
             {[
               { label: 'Entry', value: trade.entryPrice, cls: 'text-accent' },
               { label: 'Stop Loss', value: trade.stopLoss, cls: 'text-loss' },
-              { label: 'Lot Size', value: trade.lotSize, cls: 'text-text' },
+              { label: 'Position Size', value: trade.positionSize, cls: 'text-text' },
               { label: 'TP1 (1:2)', value: trade.tp1, cls: 'text-win' },
               { label: 'TP2 (1:3)', value: trade.tp2, cls: 'text-win' },
               { label: 'TP3 (1:5)', value: trade.tp3, cls: 'text-win' },

@@ -7,7 +7,7 @@ export interface TradeStats {
   breakevens: number;
   winRate: number;
   totalPnlDollar: number;
-  totalPnlPips: number;
+  totalPnlPoints: number;
   avgRR: number;
   avgQualityScore: number;
   bestPair: string;
@@ -26,7 +26,7 @@ export function computeStats(trades: Trade[]): TradeStats {
   const breakevens = trades.filter(t => t.outcome === 'BREAKEVEN').length;
 
   const totalPnlDollar = trades.reduce((s, t) => s + (t.profitLossDollar ?? 0), 0);
-  const totalPnlPips = trades.reduce((s, t) => s + (t.profitLossPips ?? 0), 0);
+  const totalPnlPoints = trades.reduce((s, t) => s + (t.profitLossPoints ?? 0), 0);
   const avgRR = average(trades.map(t => t.rrAchieved ?? 0));
   const avgQualityScore = average(trades.map(t => t.qualityScore?.total ?? 0));
 
@@ -37,7 +37,7 @@ export function computeStats(trades: Trade[]): TradeStats {
     breakevens,
     winRate: trades.length ? (wins / trades.length) * 100 : 0,
     totalPnlDollar,
-    totalPnlPips,
+    totalPnlPoints,
     avgRR,
     avgQualityScore,
     bestPair: bestByPnl(trades),
@@ -131,7 +131,7 @@ function topMistake(trades: Trade[]): string {
 function emptyStats(): TradeStats {
   return {
     totalTrades: 0, wins: 0, losses: 0, breakevens: 0,
-    winRate: 0, totalPnlDollar: 0, totalPnlPips: 0,
+    winRate: 0, totalPnlDollar: 0, totalPnlPoints: 0,
     avgRR: 0, avgQualityScore: 0,
     bestPair: '—', worstPair: '—',
     bestSession: '—', worstSession: '—',

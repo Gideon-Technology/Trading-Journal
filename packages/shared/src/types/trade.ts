@@ -116,7 +116,7 @@ export interface Trade {
   tp1: number;
   tp2: number;
   tp3: number;
-  lotSize: number;
+  positionSize: number;
   riskPercent: number;
   riskAmount: number;
   entryReason: string;
@@ -128,7 +128,7 @@ export interface Trade {
   // Result
   outcome: Outcome;
   profitLossDollar: number;
-  profitLossPips: number;
+  profitLossPoints: number;
   rrTargeted: number;
   rrAchieved: number;
   followedPlan: PlanAdherence;

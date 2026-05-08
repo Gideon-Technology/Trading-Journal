@@ -53,10 +53,10 @@ const defaultEntry = {
   analysisTimeframe: '4H',
   entryTimeframe: '15M',
   entryPrice: '', stopLoss: '', tp1: '', tp2: '', tp3: '',
-  lotSize: '', riskPercent: '1', riskAmount: '',
+  positionSize: '', riskPercent: '1', riskAmount: '',
   entryReason: '',
   outcome: 'WIN' as Outcome,
-  profitLossDollar: '', profitLossPips: '',
+  profitLossDollar: '', profitLossPoints: '',
   rrTargeted: '', rrAchieved: '',
 };
 
@@ -114,14 +114,14 @@ function Popup() {
       tp1: parseFloat(entry.tp1) || 0,
       tp2: parseFloat(entry.tp2) || 0,
       tp3: parseFloat(entry.tp3) || 0,
-      lotSize: parseFloat(entry.lotSize) || 0,
+      positionSize: parseFloat(entry.positionSize) || 0,
       riskPercent: parseFloat(entry.riskPercent) || 1,
       riskAmount: parseFloat(entry.riskAmount) || 0,
       entryReason: entry.entryReason,
       screenshotBefore: false,
       outcome: entry.outcome,
       profitLossDollar: parseFloat(entry.profitLossDollar) || 0,
-      profitLossPips: parseFloat(entry.profitLossPips) || 0,
+      profitLossPoints: parseFloat(entry.profitLossPoints) || 0,
       rrTargeted: parseFloat(entry.rrTargeted) || 0,
       rrAchieved: parseFloat(entry.rrAchieved) || 0,
       followedPlan: 'YES',
@@ -281,7 +281,7 @@ function Popup() {
               {[
                 ['Entry', 'entryPrice', '1.26875'],
                 ['Stop Loss', 'stopLoss', '1.26740'],
-                ['Lot Size', 'lotSize', '0.50'],
+                ['Lot Size', 'positionSize', '0.50'],
                 ['TP1 (1:2)', 'tp1', 'TP1'],
                 ['TP2 (1:3)', 'tp2', 'TP2'],
                 ['TP3 (1:5)', 'tp3', 'TP3'],
@@ -328,7 +328,7 @@ function Popup() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 8 }}>
             {[
               ['P&L ($)', 'profitLossDollar'],
-              ['P&L (pips)', 'profitLossPips'],
+              ['P&L (pips)', 'profitLossPoints'],
               ['RR Targeted', 'rrTargeted'],
               ['RR Achieved', 'rrAchieved'],
             ].map(([label, key]) => (

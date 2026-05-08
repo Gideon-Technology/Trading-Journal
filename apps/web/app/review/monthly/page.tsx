@@ -103,7 +103,7 @@ export default function MonthlyReview() {
           <Textarea label="Main improvement for next month" value={form.mainImprovementNextMonth} onChange={v => set('mainImprovementNextMonth', v)} />
           <Textarea label="Trading goal for next month (be specific)" value={form.tradingGoalNextMonth} onChange={v => set('tradingGoalNextMonth', v)} />
           <div className="space-y-2">
-            <label className="block text-xs font-medium text-muted uppercase tracking-wider">Ready to increase lot size?</label>
+            <label className="block text-xs font-medium text-muted uppercase tracking-wider">Ready to increase position size?</label>
             <div className="flex gap-2">
               {[true, false].map(o => (
                 <button key={String(o)} onClick={() => set('increaseLotSize', o)}

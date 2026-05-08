@@ -13,8 +13,8 @@ export function tradesToCSV(trades: Trade[]): string {
 
   const rows = trades.map(t => [
     t.date, t.session, t.pair, t.direction, t.setupType, t.marketCondition,
-    t.entryPrice, t.stopLoss, t.tp1, t.tp2, t.tp3, t.lotSize,
-    t.riskPercent, t.riskAmount, t.outcome, t.profitLossDollar, t.profitLossPips,
+    t.entryPrice, t.stopLoss, t.tp1, t.tp2, t.tp3, t.positionSize,
+    t.riskPercent, t.riskAmount, t.outcome, t.profitLossDollar, t.profitLossPoints,
     t.rrTargeted, t.rrAchieved, t.qualityScore?.total ?? 0, t.followedPlan,
     `"${(t.entryReason ?? '').replace(/"/g, '""')}"`,
     `"${(t.wentWell ?? '').replace(/"/g, '""')}"`,

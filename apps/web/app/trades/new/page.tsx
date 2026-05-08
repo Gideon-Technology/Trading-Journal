@@ -121,7 +121,7 @@ const defaultForm = {
 
   // Entry
   entryPrice: '', stopLoss: '', tp1: '', tp2: '', tp3: '',
-  lotSize: '', riskPercent: '1', riskAmount: '',
+  positionSize: '', riskPercent: '1', riskAmount: '',
   entryReason: '', screenshotBefore: false,
 
   // Management
@@ -135,7 +135,7 @@ const defaultForm = {
 
   // Result
   outcome: 'WIN' as Outcome,
-  profitLossDollar: '', profitLossPips: '',
+  profitLossDollar: '', profitLossPoints: '',
   rrTargeted: '', rrAchieved: '',
   followedPlan: 'YES' as PlanAdherence,
   mistakesMade: '', wentWell: '', improvement: '',
@@ -181,11 +181,11 @@ export default function NewTrade() {
       tp1: parseFloat(form.tp1 as string) || 0,
       tp2: parseFloat(form.tp2 as string) || 0,
       tp3: parseFloat(form.tp3 as string) || 0,
-      lotSize: parseFloat(form.lotSize as string) || 0,
+      positionSize: parseFloat(form.positionSize as string) || 0,
       riskPercent: parseFloat(form.riskPercent as string) || 1,
       riskAmount: parseFloat(form.riskAmount as string) || 0,
       profitLossDollar: parseFloat(form.profitLossDollar as string) || 0,
-      profitLossPips: parseFloat(form.profitLossPips as string) || 0,
+      profitLossPoints: parseFloat(form.profitLossPoints as string) || 0,
       rrTargeted: parseFloat(form.rrTargeted as string) || 0,
       rrAchieved: parseFloat(form.rrAchieved as string) || 0,
     } as Parameters<typeof addTrade>[0]);
@@ -247,7 +247,7 @@ export default function NewTrade() {
             </Field>
             <Field label="Direction" required>
               <div className="flex gap-2">
-                {(['BUY', 'SELL'] as Direction[]).map(d => (
+                {(['LONG', 'SHORT'] as Direction[]).map(d => (
                   <button key={d} onClick={() => set('direction', d)}
                     className={cn('flex-1 py-2 rounded text-sm font-semibold transition-colors',
                       form.direction === d
@@ -341,7 +341,7 @@ export default function NewTrade() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <Field label="Entry Price" required><Input type="number" step="0.00001" placeholder="1.26875" value={form.entryPrice as string} onChange={e => set('entryPrice', e.target.value)} /></Field>
               <Field label="Stop Loss" required><Input type="number" step="0.00001" placeholder="1.26740" value={form.stopLoss as string} onChange={e => set('stopLoss', e.target.value)} /></Field>
-              <Field label="Lot Size" required><Input type="number" step="0.01" placeholder="0.50" value={form.lotSize as string} onChange={e => set('lotSize', e.target.value)} /></Field>
+              <Field label="Position Size" required><Input type="number" step="0.01" placeholder="0.50" value={form.positionSize as string} onChange={e => set('positionSize', e.target.value)} /></Field>
               <Field label="Take Profit 1 (1:2)"><Input type="number" step="0.00001" placeholder="TP1" value={form.tp1 as string} onChange={e => set('tp1', e.target.value)} /></Field>
               <Field label="Take Profit 2 (1:3)"><Input type="number" step="0.00001" placeholder="TP2" value={form.tp2 as string} onChange={e => set('tp2', e.target.value)} /></Field>
               <Field label="Take Profit 3 (1:5)"><Input type="number" step="0.00001" placeholder="TP3" value={form.tp3 as string} onChange={e => set('tp3', e.target.value)} /></Field>
@@ -431,7 +431,7 @@ export default function NewTrade() {
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="P&L ($)"><Input type="number" step="0.01" placeholder="+175.00" value={form.profitLossDollar as string} onChange={e => set('profitLossDollar', e.target.value)} /></Field>
-              <Field label="P&L (pips)"><Input type="number" step="0.1" placeholder="+67.5" value={form.profitLossPips as string} onChange={e => set('profitLossPips', e.target.value)} /></Field>
+              <Field label="P&L (pts)"><Input type="number" step="0.1" placeholder="+67.5" value={form.profitLossPoints as string} onChange={e => set('profitLossPoints', e.target.value)} /></Field>
               <Field label="RR Targeted"><Input type="number" step="0.1" placeholder="5" value={form.rrTargeted as string} onChange={e => set('rrTargeted', e.target.value)} /></Field>
               <Field label="RR Achieved"><Input type="number" step="0.1" placeholder="4.8" value={form.rrAchieved as string} onChange={e => set('rrAchieved', e.target.value)} /></Field>
             </div>
@@ -515,7 +515,7 @@ export default function NewTrade() {
               ['enteredTooEarly', 'Entered too early — before candle close'],
               ['ignoredSR', 'Ignored key support or resistance level'],
               ['ignoredNews', 'Ignored high-impact news event'],
-              ['tooLargeLot', 'Used too large a lot size'],
+              ['tooLargeLot', 'Used too large a position size'],
               ['movedSlWrong', 'Moved stop loss in the wrong direction'],
               ['closedTooEarly', 'Closed trade too early without valid reason'],
               ['revengeTrade', 'Took a revenge trade after a loss'],
