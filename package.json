@@ -1,0 +1,15 @@
+{
+  "name": "forex-journal",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:ext": "pnpm --filter extension dev",
+    "build:web": "pnpm --filter web build",
+    "build:ext": "pnpm --filter extension build"
+  }
+}

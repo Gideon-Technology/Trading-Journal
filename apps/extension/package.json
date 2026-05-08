@@ -1,0 +1,29 @@
+{
+  "name": "extension",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite build --watch && cp manifest.json dist/",
+    "build": "vite build && cp manifest.json dist/",
+    "postbuild": "cp manifest.json dist/"
+  },
+  "dependencies": {
+    "@forex-journal/shared": "workspace:*",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "uuid": "^9.0.1",
+    "date-fns": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/uuid": "^9",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5",
+    "vite": "^5.2.0",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8",
+    "autoprefixer": "^10"
+  }
+}
