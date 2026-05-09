@@ -9,12 +9,32 @@ import { runMigration, STORAGE_KEY } from './migration';
 
 runMigration();
 
+export interface RiskSettings {
+  accountSize: number;
+  maxRiskPerTrade: number;   // %
+  maxDailyLoss: number;      // %
+  maxDailyTrades: number;
+  maxWeeklyLoss: number;     // %
+  maxConsecutiveLosses: number;
+}
+
+const DEFAULT_RISK: RiskSettings = {
+  accountSize: 10000,
+  maxRiskPerTrade: 1,
+  maxDailyLoss: 3,
+  maxDailyTrades: 3,
+  maxWeeklyLoss: 6,
+  maxConsecutiveLosses: 3,
+};
+
 interface JournalState {
   trades: Trade[];
   dailyReviews: DailyReview[];
   weeklyReviews: WeeklyReview[];
   monthlyReviews: MonthlyReview[];
   tags: string[];
+  riskSettings: RiskSettings;
+  updateRiskSettings: (s: Partial<RiskSettings>) => void;
 
   addTrade: (trade: Omit<Trade, 'id' | 'createdAt' | 'updatedAt' | 'qualityScore'>) => Trade;
   updateTrade: (id: string, updates: Partial<Trade>) => void;
@@ -46,6 +66,8 @@ export const useJournalStore = create<JournalState>()(
       weeklyReviews: [],
       monthlyReviews: [],
       tags: [],
+      riskSettings: DEFAULT_RISK,
+      updateRiskSettings: (s) => set(prev => ({ riskSettings: { ...prev.riskSettings, ...s } })),
 
       addTrade: (tradeData) => {
         const qualityScore = calculateQualityScore(tradeData);

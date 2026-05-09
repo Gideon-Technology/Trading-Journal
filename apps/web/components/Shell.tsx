@@ -23,6 +23,7 @@ const NAV_LINKS = [
   { href: '/trades/new', label: 'New Trade' },
   { href: '/trades', label: 'Trade History' },
   { href: '/analytics', label: 'Analytics' },
+  { href: '/risk', label: 'Risk Dashboard' },
   { href: '/review-queue', label: 'Review Queue', badge: true },
   { href: '/calendar', label: 'Calendar' },
   { href: '/review/daily', label: 'Daily Review' },
