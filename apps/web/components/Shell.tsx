@@ -19,13 +19,15 @@ function needsReview(trade: Trade): boolean {
 }
 
 const NAV_LINKS = [
+  { href: '/command-center', label: 'Command Center' },
   { href: '/', label: 'Dashboard' },
   { href: '/trades/new', label: 'New Trade' },
   { href: '/trades', label: 'Trade History' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/risk', label: 'Risk Dashboard' },
-  { href: '/review-queue', label: 'Review Queue', badge: true },
   { href: '/calendar', label: 'Calendar' },
+  { href: '/review-queue', label: 'Review Queue', badge: true },
+  { href: '/import-review', label: 'Import Review' },
   { href: '/review/daily', label: 'Daily Review' },
   { href: '/review/weekly', label: 'Weekly Review' },
   { href: '/review/monthly', label: 'Monthly Review' },

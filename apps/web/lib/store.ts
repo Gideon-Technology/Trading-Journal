@@ -11,20 +11,104 @@ runMigration();
 
 export interface RiskSettings {
   accountSize: number;
-  maxRiskPerTrade: number;   // %
-  maxDailyLoss: number;      // %
+  maxRiskPerTrade: number;      // %
+  maxDailyLoss: number;         // %
   maxDailyTrades: number;
-  maxWeeklyLoss: number;     // %
+  maxWeeklyLoss: number;        // %
   maxConsecutiveLosses: number;
+  trailingDrawdown?: number;    // $ — prop firm trailing drawdown
+  profitTarget?: number;        // $ — prop firm profit target
+  maxContracts?: number;
+  propFirm?: string;            // template label, e.g. 'Topstep 50K'
 }
 
+export interface PropFirmTemplate {
+  label: string;
+  accountSize: number;
+  dailyLossPct: number;
+  trailingDrawdown: number;   // $
+  profitTarget: number;       // $
+  maxContracts: number;
+  maxDailyTrades: number;
+  maxConsecutiveLosses: number;
+  maxRiskPerTrade: number;    // %
+  platform: string;
+}
+
+export const PROP_FIRM_TEMPLATES: PropFirmTemplate[] = [
+  {
+    label: 'Topstep 50K',
+    accountSize: 50000,
+    dailyLossPct: 2,        // $1,000
+    trailingDrawdown: 2000,
+    profitTarget: 3000,
+    maxContracts: 5,
+    maxDailyTrades: 6,
+    maxConsecutiveLosses: 3,
+    maxRiskPerTrade: 1,
+    platform: 'NinjaTrader',
+  },
+  {
+    label: 'Topstep 100K',
+    accountSize: 100000,
+    dailyLossPct: 2,        // $2,000
+    trailingDrawdown: 3000,
+    profitTarget: 6000,
+    maxContracts: 10,
+    maxDailyTrades: 6,
+    maxConsecutiveLosses: 3,
+    maxRiskPerTrade: 1,
+    platform: 'NinjaTrader',
+  },
+  {
+    label: 'Topstep 150K',
+    accountSize: 150000,
+    dailyLossPct: 2,        // $3,000
+    trailingDrawdown: 4500,
+    profitTarget: 9000,
+    maxContracts: 15,
+    maxDailyTrades: 6,
+    maxConsecutiveLosses: 3,
+    maxRiskPerTrade: 1,
+    platform: 'NinjaTrader',
+  },
+  {
+    label: 'Apex 50K',
+    accountSize: 50000,
+    dailyLossPct: 2,
+    trailingDrawdown: 2500,
+    profitTarget: 3000,
+    maxContracts: 5,
+    maxDailyTrades: 6,
+    maxConsecutiveLosses: 3,
+    maxRiskPerTrade: 1,
+    platform: 'NinjaTrader / Rithmic',
+  },
+  {
+    label: 'FTMO 100K',
+    accountSize: 100000,
+    dailyLossPct: 5,        // $5,000
+    trailingDrawdown: 10000,
+    profitTarget: 10000,
+    maxContracts: 10,
+    maxDailyTrades: 0,      // no limit
+    maxConsecutiveLosses: 3,
+    maxRiskPerTrade: 1,
+    platform: 'MT4 / MT5',
+  },
+];
+
 const DEFAULT_RISK: RiskSettings = {
-  accountSize: 10000,
+  accountSize: 50000,
   maxRiskPerTrade: 1,
-  maxDailyLoss: 3,
-  maxDailyTrades: 3,
-  maxWeeklyLoss: 6,
+  maxDailyLoss: 2,
+  maxDailyTrades: 6,
+  maxWeeklyLoss: 4,
   maxConsecutiveLosses: 3,
+  trailingDrawdown: 2000,
+  profitTarget: 3000,
+  maxContracts: 5,
+  propFirm: 'Topstep 50K',
 };
 
 interface JournalState {
