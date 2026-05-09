@@ -9,7 +9,7 @@ import { BrokerImport } from '@/components/BrokerImport';
 import { format } from 'date-fns';
 
 export default function Settings() {
-  const { trades, dailyReviews, weeklyReviews, monthlyReviews, importData, clearAll } = useJournalStore();
+  const { trades, dailyReviews, weeklyReviews, monthlyReviews, importData, clearAll, undoLastImport, lastImportBatchId } = useJournalStore();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const stamp = format(new Date(), 'yyyy-MM-dd');
@@ -30,14 +30,21 @@ export default function Settings() {
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result as string);
-        importData(data);
-        alert(`Import successful. Merged ${data.trades?.length ?? 0} trades.`);
+        const result = importData(data);
+        alert(`Import successful. Added ${result.imported} trades${result.skipped > 0 ? `, skipped ${result.skipped} duplicates` : ''}.`);
       } catch {
         alert('Import failed — invalid JSON file.');
       }
     };
     reader.readAsText(file);
     e.target.value = '';
+  };
+
+  const handleUndoImport = () => {
+    if (!lastImportBatchId) return;
+    if (!confirm('Remove all trades from the last CSV import? This cannot be undone.')) return;
+    const count = undoLastImport();
+    alert(`Removed ${count} trade${count !== 1 ? 's' : ''} from last import.`);
   };
 
   const handleClear = () => {
@@ -136,7 +143,18 @@ export default function Settings() {
       {/* Danger zone */}
       <Card>
         <CardHeader><p className="font-semibold text-sm text-loss">Danger Zone</p></CardHeader>
-        <CardBody>
+        <CardBody className="space-y-3">
+          {lastImportBatchId && (
+            <div className="flex items-center justify-between p-3 bg-breakeven/5 rounded-lg border border-breakeven/20">
+              <div>
+                <p className="text-text text-sm font-medium">Undo Last Import</p>
+                <p className="text-muted text-xs">Remove all trades added in the most recent CSV import.</p>
+              </div>
+              <Button variant="secondary" onClick={handleUndoImport}>
+                Undo Import
+              </Button>
+            </div>
+          )}
           <div className="flex items-center justify-between p-3 bg-loss/5 rounded-lg border border-loss/20">
             <div>
               <p className="text-text text-sm font-medium">Clear All Data</p>

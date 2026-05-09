@@ -102,6 +102,7 @@ function CheckItem({ label, checked, onChange }: { label: string; checked: boole
 const defaultForm = {
   // Info
   tags: [] as string[],
+  playbookSetupId: '' as string,
   date: new Date().toISOString().split('T')[0],
   assetClass: 'Forex' as AssetClass,
   session: 'London' as Session,
@@ -166,6 +167,7 @@ export default function NewTrade() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(defaultForm);
   const addTrade = useJournalStore(s => s.addTrade);
+  const playbookSetups = useJournalStore(s => s.playbookSetups);
   const router = useRouter();
 
   const set = (key: keyof FormState, value: unknown) =>
@@ -282,6 +284,17 @@ export default function NewTrade() {
                 {['Trending', 'Ranging', 'Reversal', 'Breakout'].map(s => <option key={s}>{s}</option>)}
               </Select>
             </Field>
+            {playbookSetups.length > 0 && (
+              <div className="col-span-2">
+                <Field label="Playbook Setup (optional)">
+                  <select value={form.playbookSetupId} onChange={e => set('playbookSetupId', e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-bg-elevated border border-bg-border rounded-md text-text">
+                    <option value="">— No playbook setup —</option>
+                    {playbookSetups.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </Field>
+              </div>
+            )}
             <div className="col-span-2">
               <Field label="Tags (optional)">
                 <TagSelector selected={form.tags} onChange={v => set('tags', v)} />

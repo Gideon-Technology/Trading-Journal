@@ -150,4 +150,12 @@ export interface Trade {
   // Tagging & review
   tags?: string[];
   reviewStatus?: ReviewStatus;
+
+  // Playbook link
+  playbookSetupId?: string;
+
+  // Import tracking
+  importBatchId?: string;
+  importSource?: string;
+  outsidePlan?: boolean;   // true if trade was outside daily plan rules
 }

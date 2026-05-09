@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { previewBrokerImport, parsedRowToTrade, BROKER_LABELS } from '@forex-journal/shared';
+import { v4 as uuid } from 'uuid';
 import type { ImportPreview } from '@forex-journal/shared';
 import { useJournalStore } from '@/lib/store';
 import { formatCurrency, outcomeBg } from '@/lib/utils';
@@ -60,10 +61,11 @@ export function BrokerImport() {
   const handleImport = () => {
     if (!preview) return;
     setImporting(true);
+    const batchId = uuid();
     let count = 0;
     for (const row of preview.rows) {
       try {
-        addTrade(parsedRowToTrade(row));
+        addTrade({ ...parsedRowToTrade(row), importBatchId: batchId, importSource: preview.brokerLabel });
         count++;
       } catch { /* skip malformed rows */ }
     }

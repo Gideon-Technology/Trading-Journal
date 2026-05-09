@@ -20,10 +20,12 @@ function needsReview(trade: Trade): boolean {
 
 const NAV_LINKS = [
   { href: '/command-center', label: 'Command Center' },
+  { href: '/plan', label: 'Trade Plan' },
   { href: '/', label: 'Dashboard' },
   { href: '/trades/new', label: 'New Trade' },
   { href: '/trades', label: 'Trade History' },
   { href: '/analytics', label: 'Analytics' },
+  { href: '/playbook', label: 'Playbook' },
   { href: '/risk', label: 'Risk Dashboard' },
   { href: '/calendar', label: 'Calendar' },
   { href: '/review-queue', label: 'Review Queue', badge: true },

@@ -134,7 +134,7 @@ function Stat({ label, value, sub, cls = '' }: { label: string; value: string; s
 }
 
 export default function CommandCenter() {
-  const { trades, riskSettings } = useJournalStore();
+  const { trades, riskSettings, getTodayPlan } = useJournalStore();
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -152,6 +152,7 @@ export default function CommandCenter() {
     return count;
   }, [trades]);
 
+  const todayPlan = getTodayPlan(today);
   const maxDailyLossDollar = (riskSettings.maxDailyLoss / 100) * riskSettings.accountSize;
   const todayLossUsedPct = maxDailyLossDollar > 0 ? Math.min(100, (Math.abs(Math.min(0, todayPnL)) / maxDailyLossDollar) * 100) : 0;
 
@@ -207,6 +208,47 @@ export default function CommandCenter() {
           {lossPattern && <p className="text-sm opacity-80">— {lossPattern}</p>}
         </div>
       </div>
+
+      {/* Today's Plan banner */}
+      {!todayPlan ? (
+        <Link href="/plan">
+          <div className="rounded-xl border-2 border-dashed border-accent/40 p-4 flex items-center justify-between hover:border-accent/70 transition-colors cursor-pointer">
+            <div>
+              <p className="font-semibold text-text text-sm">No trade plan for today</p>
+              <p className="text-muted text-xs mt-0.5">Create your plan before trading — define bias, instruments, and limits.</p>
+            </div>
+            <span className="text-accent text-sm font-semibold shrink-0 ml-4">Create Plan →</span>
+          </div>
+        </Link>
+      ) : (
+        <div className={`rounded-xl border-2 p-4 ${todayPlan.status === 'READY' ? 'border-win/40 bg-win/5' : 'border-breakeven/40 bg-breakeven/5'}`}>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-semibold text-sm text-text">
+              {todayPlan.status === 'READY' ? '✓ Plan Ready' : '⚠ Plan Draft'}
+              {todayPlan.marketBias === 'BULLISH' ? ' · ↑ Bullish' : todayPlan.marketBias === 'BEARISH' ? ' · ↓ Bearish' : ' · → Neutral'}
+            </p>
+            <Link href="/plan" className="text-xs text-accent hover:underline">Edit →</Link>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {todayPlan.allowedInstruments.map(i => (
+              <span key={i} className="text-xs px-2 py-0.5 rounded bg-accent/10 text-accent border border-accent/20">{i}</span>
+            ))}
+            {todayPlan.allowedInstruments.length === 0 && (
+              <span className="text-xs text-loss">No instruments set — update your plan</span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-3 text-xs text-muted">
+            <span>Max trades: <strong className="text-text">{todayPlan.maxTrades}</strong></span>
+            <span>Risk/trade: <strong className="text-text">{todayPlan.maxRiskPerTrade}%</strong></span>
+            <span>Stop: <strong className="text-text">${todayPlan.dailyStopLoss}</strong></span>
+            <span>Target: <strong className="text-text">${todayPlan.dailyProfitTarget}</strong></span>
+            {todayPlan.mainSetup && <span>Setup: <strong className="text-text">{todayPlan.mainSetup}</strong></span>}
+          </div>
+          {todayPlan.noTradeConditions && (
+            <p className="text-xs text-loss mt-2">⛔ {todayPlan.noTradeConditions}</p>
+          )}
+        </div>
+      )}
 
       {/* KPI row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
