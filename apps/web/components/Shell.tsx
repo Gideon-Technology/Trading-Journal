@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useJournalStore } from '@/lib/store';
 import type { Trade } from '@forex-journal/shared';
+import { AUTOMATION_LEVEL_LABELS } from '@forex-journal/shared';
 
 function needsReview(trade: Trade): boolean {
   if (trade.reviewStatus === 'REVIEWED') return false;
@@ -19,29 +20,40 @@ function needsReview(trade: Trade): boolean {
 }
 
 const NAV_LINKS = [
-  { href: '/command-center', label: 'Command Center' },
-  { href: '/plan', label: 'Trade Plan' },
-  { href: '/', label: 'Dashboard' },
-  { href: '/trades/new', label: 'New Trade' },
-  { href: '/quick-log', label: 'Quick Log' },
-  { href: '/trades', label: 'Trade History' },
-  { href: '/analytics', label: 'Analytics' },
-  { href: '/playbook', label: 'Playbook' },
-  { href: '/risk', label: 'Risk Dashboard' },
-  { href: '/calendar', label: 'Calendar' },
-  { href: '/review-queue', label: 'Review Queue', badge: true },
-  { href: '/import-review', label: 'Import Review' },
-  { href: '/review/daily', label: 'Daily Review' },
-  { href: '/review/weekly', label: 'Weekly Review' },
-  { href: '/review/monthly', label: 'Monthly Review' },
-  { href: '/settings', label: 'Import / Export' },
-];
+  { href: '/command-center', label: 'Command Center', group: 'Core' },
+  { href: '/plan', label: 'Trade Plan', group: 'Core' },
+  { href: '/', label: 'Dashboard', group: 'Core' },
+  { href: '/trades/new', label: 'New Trade', group: 'Core' },
+  { href: '/quick-log', label: 'Quick Log', group: 'Core' },
+  { href: '/trades', label: 'Trade History', group: 'Core' },
+  { href: '/analytics', label: 'Analytics', group: 'Core' },
+  { href: '/playbook', label: 'Playbook', group: 'Core' },
+  { href: '/risk', label: 'Risk Dashboard', group: 'Core' },
+  { href: '/calendar', label: 'Calendar', group: 'Core' },
+  { href: '/review-queue', label: 'Review Queue', badge: true, group: 'Core' },
+  { href: '/import-review', label: 'Import Review', group: 'Core' },
+  { href: '/review/daily', label: 'Daily Review', group: 'Core' },
+  { href: '/review/weekly', label: 'Weekly Review', group: 'Core' },
+  { href: '/review/monthly', label: 'Monthly Review', group: 'Core' },
+  { href: '/settings', label: 'Import / Export', group: 'Core' },
+  // Automation
+  { href: '/signals', label: 'Signals', group: 'Automation' },
+  { href: '/import/tradingview', label: 'Import Alert', group: 'Automation' },
+  { href: '/paper', label: 'Paper Trading', group: 'Automation' },
+  { href: '/approvals', label: 'Approvals', group: 'Automation', approvalBadge: true },
+  { href: '/automation-rules', label: 'Automation Rules', group: 'Automation' },
+  { href: '/ai-coach', label: 'AI Coach', group: 'Automation' },
+  { href: '/audit-log', label: 'Audit Log', group: 'Automation' },
+] satisfies ReadonlyArray<{ href: string; label: string; group: 'Core' | 'Automation'; badge?: boolean; approvalBadge?: boolean }>;
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const trades = useJournalStore(s => s.trades);
+  const signals = useJournalStore(s => s.signals);
+  const automationRules = useJournalStore(s => s.automationRules);
   const reviewCount = useMemo(() => trades.filter(needsReview).length, [trades]);
+  const pendingApprovals = useMemo(() => signals.filter(s => s.approvalStatus === 'PENDING').length, [signals]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -89,31 +101,48 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
+        {/* Kill switch banner */}
+        {automationRules.killSwitchEnabled && (
+          <div className="mx-2 my-2 px-3 py-2 bg-red-900/40 border border-red-700 rounded-lg">
+            <p className="text-red-400 text-xs font-bold">⚠ KILL SWITCH ACTIVE</p>
+            <a href="/automation-rules" className="text-red-300 text-xs hover:underline">Deactivate →</a>
+          </div>
+        )}
+
         {/* Nav links */}
         <nav className="flex-1 overflow-y-auto py-3">
-          <p className="px-4 py-1 text-muted text-xs font-semibold uppercase tracking-wider mb-1">Menu</p>
-          {NAV_LINKS.map(({ href, label, badge }) => {
-            const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-md mx-2 transition-colors',
-                  active
-                    ? 'bg-accent/10 text-accent font-medium'
-                    : 'text-muted hover:text-text hover:bg-bg-elevated'
-                )}
-              >
-                <span>{label}</span>
-                {badge && reviewCount > 0 && (
-                  <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-loss text-white text-xs flex items-center justify-center font-semibold">
-                    {reviewCount > 99 ? '99+' : reviewCount}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+          {(['Core', 'Automation'] as const).map(group => (
+            <div key={group}>
+              <p className="px-4 pt-2 pb-1 text-muted text-xs font-semibold uppercase tracking-wider">{group}</p>
+              {NAV_LINKS.filter(l => l.group === group).map(({ href, label, badge, approvalBadge }) => {
+                const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
+                const count = badge ? reviewCount : approvalBadge ? pendingApprovals : 0;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={cn(
+                      'flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-md mx-2 transition-colors',
+                      active
+                        ? 'bg-accent/10 text-accent font-medium'
+                        : 'text-muted hover:text-text hover:bg-bg-elevated'
+                    )}
+                  >
+                    <span>{label}</span>
+                    {count > 0 && (
+                      <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-loss text-white text-xs flex items-center justify-center font-semibold">
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+          {/* Automation level indicator */}
+          <div className="px-4 pt-3 pb-1">
+            <p className="text-muted text-xs">Level {automationRules.allowedAutomationLevel}: {AUTOMATION_LEVEL_LABELS[automationRules.allowedAutomationLevel]}</p>
+          </div>
         </nav>
 
         <div className="px-4 py-4 border-t border-bg-border">

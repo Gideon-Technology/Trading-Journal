@@ -8,7 +8,7 @@
  */
 
 import { pb } from '../pocketbase';
-import type { Trade, DailyPlan, PlaybookSetup, DailyReview, WeeklyReview, MonthlyReview } from '@forex-journal/shared';
+import type { Trade, DailyPlan, PlaybookSetup, DailyReview, WeeklyReview, MonthlyReview, Signal, AutomationRules, ExecutionRecord, AuditLog, AIReview } from '@forex-journal/shared';
 import type { RecordModel } from 'pocketbase';
 
 // ── Generic helpers ──────────────────────────────────────────────────────────
@@ -195,6 +195,76 @@ export async function getMonthlyReviews(): Promise<MonthlyReview[]> {
 
 export async function saveMonthlyReview(review: MonthlyReview): Promise<void> {
   await upsertRecord('monthly_reviews', review.id, review as unknown as Record<string, unknown>);
+}
+
+// ── Signals ───────────────────────────────────────────────────────────────────
+
+const SIGNALS = 'signals';
+
+export async function getSignals(): Promise<Signal[]> {
+  const records = await getRecords(SIGNALS);
+  return records.map(r => r['data'] as Signal);
+}
+
+export async function saveSignal(signal: Signal): Promise<void> {
+  await upsertRecord(SIGNALS, signal.id, signal as unknown as Record<string, unknown>, signal.createdAt, signal.updatedAt);
+}
+
+export async function deleteSignal(id: string): Promise<void> {
+  await deleteRecord(SIGNALS, id);
+}
+
+// ── Automation Rules ──────────────────────────────────────────────────────────
+
+const AUTOMATION_RULES = 'automation_rules';
+
+export async function getAutomationRules(): Promise<AutomationRules | null> {
+  const records = await getRecords(AUTOMATION_RULES);
+  if (!records.length) return null;
+  return records[0]['data'] as AutomationRules;
+}
+
+export async function saveAutomationRules(rules: AutomationRules): Promise<void> {
+  await upsertRecord(AUTOMATION_RULES, 'singleton', rules as unknown as Record<string, unknown>);
+}
+
+// ── AI Reviews ────────────────────────────────────────────────────────────────
+
+const AI_REVIEWS = 'ai_reviews';
+
+export async function getAIReviews(): Promise<AIReview[]> {
+  const records = await getRecords(AI_REVIEWS);
+  return records.map(r => r['data'] as AIReview);
+}
+
+export async function saveAIReview(review: AIReview): Promise<void> {
+  await upsertRecord(AI_REVIEWS, review.id, review as unknown as Record<string, unknown>, review.createdAt, review.updatedAt);
+}
+
+// ── Execution Records ─────────────────────────────────────────────────────────
+
+const EXECUTION_RECORDS = 'execution_records';
+
+export async function getExecutionRecords(): Promise<ExecutionRecord[]> {
+  const records = await getRecords(EXECUTION_RECORDS);
+  return records.map(r => r['data'] as ExecutionRecord);
+}
+
+export async function saveExecutionRecord(record: ExecutionRecord): Promise<void> {
+  await upsertRecord(EXECUTION_RECORDS, record.id, record as unknown as Record<string, unknown>, record.createdAt, record.updatedAt);
+}
+
+// ── Audit Logs ────────────────────────────────────────────────────────────────
+
+const AUDIT_LOGS = 'audit_logs';
+
+export async function getAuditLogs(): Promise<AuditLog[]> {
+  const records = await getRecords(AUDIT_LOGS);
+  return records.map(r => r['data'] as AuditLog);
+}
+
+export async function saveAuditLog(log: AuditLog): Promise<void> {
+  await upsertRecord(AUDIT_LOGS, log.id, log as unknown as Record<string, unknown>, log.createdAt);
 }
 
 // Re-export generic helpers for use in migration/settings

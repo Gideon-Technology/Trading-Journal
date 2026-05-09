@@ -3,8 +3,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuid } from 'uuid';
-import type { Trade, DailyReview, WeeklyReview, MonthlyReview, DailyPlan, PlaybookSetup } from '@forex-journal/shared';
-import { calculateQualityScore, checkPlanCompliance, calcExecutionScore } from '@forex-journal/shared';
+import type { Trade, DailyReview, WeeklyReview, MonthlyReview, DailyPlan, PlaybookSetup, Signal, AutomationRules, ExecutionRecord, AuditLog, AIReview, AISignalScore } from '@forex-journal/shared';
+import { calculateQualityScore, checkPlanCompliance, calcExecutionScore, DEFAULT_AUTOMATION_RULES } from '@forex-journal/shared';
 import { runMigration, STORAGE_KEY } from './migration';
 
 runMigration();
@@ -122,6 +122,14 @@ interface JournalState {
   riskSettings: RiskSettings;
   lastImportBatchId: string | null;
 
+  // Automation
+  signals: Signal[];
+  automationRules: AutomationRules;
+  executionRecords: ExecutionRecord[];
+  auditLogs: AuditLog[];
+  aiReviews: AIReview[];
+  aiSignalScores: AISignalScore[];
+
   updateRiskSettings: (s: Partial<RiskSettings>) => void;
 
   addTrade: (trade: Omit<Trade, 'id' | 'createdAt' | 'updatedAt' | 'qualityScore'>) => Trade;
@@ -150,7 +158,29 @@ interface JournalState {
   addMonthlyReview: (review: Omit<MonthlyReview, 'id'>) => void;
   updateMonthlyReview: (id: string, updates: Partial<MonthlyReview>) => void;
 
-  importData: (data: { trades?: Trade[]; dailyReviews?: DailyReview[]; weeklyReviews?: WeeklyReview[]; monthlyReviews?: MonthlyReview[]; tags?: string[]; dailyPlans?: DailyPlan[]; playbookSetups?: PlaybookSetup[] }, batchId?: string) => { imported: number; skipped: number };
+  // Signal actions
+  addSignal: (signal: Omit<Signal, 'id' | 'createdAt' | 'updatedAt'>) => Signal;
+  updateSignal: (id: string, updates: Partial<Signal>) => void;
+  deleteSignal: (id: string) => void;
+  getSignal: (id: string) => Signal | undefined;
+
+  // Automation rules
+  updateAutomationRules: (updates: Partial<AutomationRules>) => void;
+  toggleKillSwitch: () => void;
+
+  // Execution records
+  addExecutionRecord: (record: ExecutionRecord) => void;
+  updateExecutionRecord: (id: string, updates: Partial<ExecutionRecord>) => void;
+
+  // Audit log
+  addAuditLog: (log: Omit<AuditLog, 'id' | 'createdAt'>) => void;
+
+  // AI reviews
+  addAIReview: (review: Omit<AIReview, 'id' | 'createdAt' | 'updatedAt'>) => AIReview;
+  updateAIReview: (id: string, updates: Partial<AIReview>) => void;
+  addAISignalScore: (score: Omit<AISignalScore, 'id' | 'createdAt'>) => AISignalScore;
+
+  importData: (data: { trades?: Trade[]; dailyReviews?: DailyReview[]; weeklyReviews?: WeeklyReview[]; monthlyReviews?: MonthlyReview[]; tags?: string[]; dailyPlans?: DailyPlan[]; playbookSetups?: PlaybookSetup[]; signals?: Signal[] }, batchId?: string) => { imported: number; skipped: number };
   undoLastImport: () => number;
   clearAll: () => void;
 }
@@ -167,6 +197,12 @@ export const useJournalStore = create<JournalState>()(
       tags: [],
       riskSettings: DEFAULT_RISK,
       lastImportBatchId: null,
+      signals: [],
+      automationRules: DEFAULT_AUTOMATION_RULES,
+      executionRecords: [],
+      auditLogs: [],
+      aiReviews: [],
+      aiSignalScores: [],
 
       updateRiskSettings: (s) => set(prev => ({ riskSettings: { ...prev.riskSettings, ...s } })),
 
@@ -249,6 +285,76 @@ export const useJournalStore = create<JournalState>()(
       updateMonthlyReview: (id, updates) =>
         set(s => ({ monthlyReviews: s.monthlyReviews.map(r => r.id === id ? { ...r, ...updates } : r) })),
 
+      addSignal: (data) => {
+        const signal: Signal = {
+          ...data,
+          id: uuid(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        set(s => ({ signals: [signal, ...s.signals] }));
+        return signal;
+      },
+      updateSignal: (id, updates) =>
+        set(s => ({
+          signals: s.signals.map(sig =>
+            sig.id === id ? { ...sig, ...updates, updatedAt: new Date().toISOString() } : sig
+          ),
+        })),
+      deleteSignal: (id) => set(s => ({ signals: s.signals.filter(sig => sig.id !== id) })),
+      getSignal: (id) => get().signals.find(sig => sig.id === id),
+
+      updateAutomationRules: (updates) =>
+        set(s => ({ automationRules: { ...s.automationRules, ...updates } })),
+      toggleKillSwitch: () =>
+        set(s => ({
+          automationRules: { ...s.automationRules, killSwitchEnabled: !s.automationRules.killSwitchEnabled },
+        })),
+
+      addExecutionRecord: (record) =>
+        set(s => ({ executionRecords: [record, ...s.executionRecords] })),
+      updateExecutionRecord: (id, updates) =>
+        set(s => ({
+          executionRecords: s.executionRecords.map(r =>
+            r.id === id ? { ...r, ...updates, updatedAt: new Date().toISOString() } : r
+          ),
+        })),
+
+      addAuditLog: (data) => {
+        const log: AuditLog = {
+          ...data,
+          id: uuid(),
+          createdAt: new Date().toISOString(),
+        };
+        set(s => ({ auditLogs: [log, ...s.auditLogs].slice(0, 1000) }));
+      },
+
+      addAIReview: (data) => {
+        const review: AIReview = {
+          ...data,
+          id: uuid(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        set(s => ({ aiReviews: [review, ...s.aiReviews] }));
+        return review;
+      },
+      updateAIReview: (id, updates) =>
+        set(s => ({
+          aiReviews: s.aiReviews.map(r =>
+            r.id === id ? { ...r, ...updates, updatedAt: new Date().toISOString() } : r
+          ),
+        })),
+      addAISignalScore: (data) => {
+        const score: AISignalScore = {
+          ...data,
+          id: uuid(),
+          createdAt: new Date().toISOString(),
+        };
+        set(s => ({ aiSignalScores: [score, ...s.aiSignalScores] }));
+        return score;
+      },
+
       importData: (data, batchId) => {
         const existing = get().trades;
         const existingKeys = new Set(existing.map(tradeFingerprint));
@@ -262,6 +368,7 @@ export const useJournalStore = create<JournalState>()(
           monthlyReviews: mergeById([...(data.monthlyReviews ?? []), ...s.monthlyReviews]),
           dailyPlans: mergeById([...(data.dailyPlans ?? []), ...s.dailyPlans]),
           playbookSetups: mergeById([...(data.playbookSetups ?? []), ...s.playbookSetups]),
+          signals: mergeById([...(data.signals ?? []), ...s.signals]),
           tags: [...new Set([...(data.tags ?? []), ...s.tags])].sort(),
           lastImportBatchId: batchId ?? s.lastImportBatchId,
         }));
@@ -279,7 +386,7 @@ export const useJournalStore = create<JournalState>()(
         return before - get().trades.length;
       },
 
-      clearAll: () => set({ trades: [], dailyReviews: [], weeklyReviews: [], monthlyReviews: [], dailyPlans: [], playbookSetups: [], tags: [], lastImportBatchId: null }),
+      clearAll: () => set({ trades: [], dailyReviews: [], weeklyReviews: [], monthlyReviews: [], dailyPlans: [], playbookSetups: [], tags: [], lastImportBatchId: null, signals: [], executionRecords: [], auditLogs: [], aiReviews: [], aiSignalScores: [] }),
     }),
     { name: STORAGE_KEY }
   )

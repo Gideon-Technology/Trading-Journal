@@ -178,4 +178,21 @@ export interface Trade {
   plannedRiskPercent?: number;
   plannedRR?: number;
   executionScore?: number;  // 0–100, auto-calculated
+
+  // General notes (overrides per-section notes)
+  notes?: string;
+
+  // Automation / signal tracking
+  paperMode?: boolean;
+  linkedSignalId?: string;
+  tradeSource?: 'MANUAL' | 'SIGNAL' | 'IMPORT' | 'OTHER';
+  confidenceScore?: number;    // 0–10 from signal
+  aiScore?: number;            // 0–10 from AI review
+  riskScore?: number;          // 0–10 from risk engine (lower = safer)
+  finalScore?: number;         // 0–10 composite
+  approvalStatus?: 'NOT_REQUIRED' | 'PENDING' | 'APPROVED' | 'REJECTED';
+  approvedAt?: string;
+  approvedBy?: string;
+  rejectionReasons?: string[];
+  executionRecordId?: string;
 }
