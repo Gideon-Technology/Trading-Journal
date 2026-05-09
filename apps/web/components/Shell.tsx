@@ -1,15 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useJournalStore } from '@/lib/store';
+import type { Trade } from '@forex-journal/shared';
 
-const links = [
+function needsReview(trade: Trade): boolean {
+  if (trade.reviewStatus === 'REVIEWED') return false;
+  if (!trade.wentWell) return true;
+  if (!trade.improvement) return true;
+  if ((trade.qualityScore?.total ?? 0) < 5) return true;
+  if (trade.followedPlan === 'NO') return true;
+  if (trade.psychology?.revengeTrade) return true;
+  if (trade.reviewStatus === 'FLAGGED') return true;
+  return false;
+}
+
+const NAV_LINKS = [
   { href: '/', label: 'Dashboard' },
   { href: '/trades/new', label: 'New Trade' },
   { href: '/trades', label: 'Trade History' },
   { href: '/analytics', label: 'Analytics' },
+  { href: '/review-queue', label: 'Review Queue', badge: true },
   { href: '/review/daily', label: 'Daily Review' },
   { href: '/review/weekly', label: 'Weekly Review' },
   { href: '/review/monthly', label: 'Monthly Review' },
@@ -19,6 +33,8 @@ const links = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const trades = useJournalStore(s => s.trades);
+  const reviewCount = useMemo(() => trades.filter(needsReview).length, [trades]);
 
   // Close sidebar on route change (mobile)
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -69,20 +85,25 @@ export function Shell({ children }: { children: React.ReactNode }) {
         {/* Nav links */}
         <nav className="flex-1 overflow-y-auto py-3">
           <p className="px-4 py-1 text-muted text-xs font-semibold uppercase tracking-wider mb-1">Menu</p>
-          {links.map(({ href, label }) => {
+          {NAV_LINKS.map(({ href, label, badge }) => {
             const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-2.5 text-sm rounded-md mx-2 transition-colors',
+                  'flex items-center justify-between gap-3 px-4 py-2.5 text-sm rounded-md mx-2 transition-colors',
                   active
                     ? 'bg-accent/10 text-accent font-medium'
                     : 'text-muted hover:text-text hover:bg-bg-elevated'
                 )}
               >
-                {label}
+                <span>{label}</span>
+                {badge && reviewCount > 0 && (
+                  <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-loss text-white text-xs flex items-center justify-center font-semibold">
+                    {reviewCount > 99 ? '99+' : reviewCount}
+                  </span>
+                )}
               </Link>
             );
           })}
