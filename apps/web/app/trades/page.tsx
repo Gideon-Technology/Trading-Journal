@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useJournalStore } from '@/lib/store';
 import { Button } from '@/components/ui/Button';
 import { formatCurrency, outcomeBg, scoreBg } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { getTrades } from '@/lib/storage/journalRepository';
+import { isPocketBaseMode } from '@/lib/storage/storageMode';
+import type { Trade } from '@forex-journal/shared';
 
 const PAIRS = ['All', 'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD', 'Other'];
 const OUTCOMES = ['All', 'WIN', 'LOSS', 'BREAKEVEN'];
@@ -13,7 +16,24 @@ const SESSIONS = ['All', 'Asian', 'London', 'New York', 'London-NY Overlap'];
 const DIRECTIONS = ['All', 'LONG', 'SHORT'];
 
 export default function TradeHistory() {
-  const { trades, deleteTrade, tags: allTags } = useJournalStore();
+  const { trades: zustandTrades, deleteTrade: zustandDeleteTrade, tags: allTags } = useJournalStore();
+
+  // In PB mode, fetch from repository; otherwise fall back to Zustand
+  const [pbTrades, setPbTrades] = useState<Trade[] | null>(null);
+  const [pbLoading, setPbLoading] = useState(false);
+  const [pbMode] = useState(() => typeof window !== 'undefined' && isPocketBaseMode());
+
+  useEffect(() => {
+    if (!pbMode) return;
+    setPbLoading(true);
+    getTrades()
+      .then(t => setPbTrades(t))
+      .catch(() => setPbTrades(null)) // fallback to Zustand on error
+      .finally(() => setPbLoading(false));
+  }, [pbMode]);
+
+  const trades = pbMode && pbTrades !== null ? pbTrades : zustandTrades;
+
   const [pair, setPair] = useState('All');
   const [outcome, setOutcome] = useState('All');
   const [session, setSession] = useState('All');
@@ -37,7 +57,7 @@ export default function TradeHistory() {
         if (sortBy === 'pnl') return (b.profitLossDollar ?? 0) - (a.profitLossDollar ?? 0);
         return (b.qualityScore?.total ?? 0) - (a.qualityScore?.total ?? 0);
       });
-  }, [trades, pair, outcome, session, direction, search, sortBy]);
+  }, [trades, pair, outcome, session, direction, search, sortBy, activeTag]);
 
   const summary = useMemo(() => ({
     wins: filtered.filter(t => t.outcome === 'WIN').length,
@@ -45,12 +65,24 @@ export default function TradeHistory() {
     pnl: filtered.reduce((s, t) => s + (t.profitLossDollar ?? 0), 0),
   }), [filtered]);
 
+  const handleDelete = (id: string) => {
+    if (!confirm('Delete this trade?')) return;
+    zustandDeleteTrade(id);
+    // In PB mode, also remove from local PB state
+    if (pbMode && pbTrades) setPbTrades(prev => (prev ?? []).filter(t => t.id !== id));
+    // TODO: call repository.deleteTrade(id) for PB persistence
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-text">Trade History</h1>
-          <p className="text-muted text-sm">{filtered.length} trades · Win: {summary.wins} · Loss: {summary.losses} · P&L: <span className={summary.pnl >= 0 ? 'text-win' : 'text-loss'}>{formatCurrency(summary.pnl)}</span></p>
+          <p className="text-muted text-sm">
+            {filtered.length} trades · Win: {summary.wins} · Loss: {summary.losses} · P&L:{' '}
+            <span className={summary.pnl >= 0 ? 'text-win' : 'text-loss'}>{formatCurrency(summary.pnl)}</span>
+            {pbMode && <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-accent/10 text-accent border border-accent/20">{pbLoading ? 'Loading from PocketBase…' : 'PocketBase'}</span>}
+          </p>
         </div>
         <Link href="/trades/new"><Button>+ New Trade</Button></Link>
       </div>
@@ -108,7 +140,9 @@ export default function TradeHistory() {
       {/* Table */}
       <div className="bg-bg-card border border-bg-border rounded-lg overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="text-center py-16 text-muted">No trades match your filters.</div>
+          <div className="text-center py-16 text-muted">
+            {pbLoading ? 'Loading trades from PocketBase…' : 'No trades match your filters.'}
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -125,7 +159,7 @@ export default function TradeHistory() {
                     <td className="px-4 py-3 text-muted text-xs font-mono whitespace-nowrap">{t.date}</td>
                     <td className="px-4 py-3 font-semibold whitespace-nowrap">{t.pair}</td>
                     <td className="px-4 py-3">
-                      <span className={t.direction === 'BUY' || direction === 'LONG' ? 'text-win text-xs font-mono font-bold' : 'text-loss text-xs font-mono font-bold'}>{t.direction}</span>
+                      <span className={t.direction === 'BUY' || t.direction === 'LONG' ? 'text-win text-xs font-mono font-bold' : 'text-loss text-xs font-mono font-bold'}>{t.direction}</span>
                     </td>
                     <td className="px-4 py-3 text-muted text-xs whitespace-nowrap">{t.setupType}</td>
                     <td className="px-4 py-3 text-muted text-xs whitespace-nowrap">{t.session}</td>
@@ -160,8 +194,10 @@ export default function TradeHistory() {
                         <Link href={`/trades/${t.id}`}>
                           <button className="px-2 py-1 rounded bg-bg-elevated hover:bg-bg-border text-muted hover:text-text text-xs transition-colors">View</button>
                         </Link>
-                        <button onClick={() => { if (confirm('Delete this trade?')) deleteTrade(t.id); }}
-                          className="px-2 py-1 rounded bg-loss/10 hover:bg-loss/20 text-loss text-xs transition-colors">
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="px-2 py-1 rounded bg-loss/10 hover:bg-loss/20 text-loss text-xs transition-colors"
+                        >
                           Del
                         </button>
                       </div>

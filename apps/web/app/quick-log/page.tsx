@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { calcContractSizing, FUTURES_META } from '@forex-journal/shared';
 import type { Trade, Session, Direction, SetupType, Outcome, PlanAdherence, AssetClass } from '@forex-journal/shared';
+import { createTrade as repositoryCreateTrade } from '@/lib/storage/journalRepository';
+import { isPocketBaseMode } from '@/lib/storage/storageMode';
 
 const INSTRUMENTS: Record<AssetClass, string[]> = {
   Forex: ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD', 'XAG/USD', 'Other'],
@@ -112,6 +114,10 @@ export default function QuickLog() {
   const handleSave = async (action: 'detail' | 'another' | 'history') => {
     setSaving(true);
     const trade = addTrade(buildTradePayload());
+    // In PB mode, persist to PocketBase alongside Zustand (fire-and-forget)
+    if (isPocketBaseMode()) {
+      repositoryCreateTrade(trade).catch(err => console.warn('[QuickLog] PB write failed', err));
+    }
     setSaving(false);
     if (action === 'detail') router.push(`/trades/${trade.id}`);
     else if (action === 'history') router.push('/trades');

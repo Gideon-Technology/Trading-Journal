@@ -8,6 +8,8 @@ import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 import type { Trade, Session, Direction, MarketCondition, SetupType, Outcome, PlanAdherence, AssetClass } from '@forex-journal/shared';
 import { TagSelector } from '@/components/ui/TagSelector';
+import { createTrade as repositoryCreateTrade } from '@/lib/storage/journalRepository';
+import { isPocketBaseMode } from '@/lib/storage/storageMode';
 
 const STEPS = ['Trade Info', 'Pre-Trade', 'Entry', 'Management', 'Result', 'Psychology', 'Mistakes'];
 
@@ -196,6 +198,10 @@ export default function NewTrade() {
       rrTargeted: parseFloat(form.rrTargeted as string) || 0,
       rrAchieved: parseFloat(form.rrAchieved as string) || 0,
     } as Parameters<typeof addTrade>[0]);
+    // In PB mode, also persist to PocketBase (fire-and-forget; Zustand is source of truth for UI)
+    if (isPocketBaseMode()) {
+      repositoryCreateTrade(trade).catch(err => console.warn('[NewTrade] PB write failed', err));
+    }
     router.push(`/trades/${trade.id}`);
   };
 
