@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 import type { Trade, Session, Direction, MarketCondition, SetupType, Outcome, PlanAdherence, AssetClass } from '@forex-journal/shared';
+import { TagSelector } from '@/components/ui/TagSelector';
 
 const STEPS = ['Trade Info', 'Pre-Trade', 'Entry', 'Management', 'Result', 'Psychology', 'Mistakes'];
 
@@ -100,6 +101,7 @@ function CheckItem({ label, checked, onChange }: { label: string; checked: boole
 
 const defaultForm = {
   // Info
+  tags: [] as string[],
   date: new Date().toISOString().split('T')[0],
   assetClass: 'Forex' as AssetClass,
   session: 'London' as Session,
@@ -175,6 +177,7 @@ export default function NewTrade() {
   const handleSubmit = () => {
     const trade = addTrade({
       ...form,
+      tags: form.tags,
       assetClass: form.assetClass,
       entryPrice: parseFloat(form.entryPrice as string) || 0,
       stopLoss: parseFloat(form.stopLoss as string) || 0,
@@ -279,6 +282,11 @@ export default function NewTrade() {
                 {['Trending', 'Ranging', 'Reversal', 'Breakout'].map(s => <option key={s}>{s}</option>)}
               </Select>
             </Field>
+            <div className="col-span-2">
+              <Field label="Tags (optional)">
+                <TagSelector selected={form.tags} onChange={v => set('tags', v)} />
+              </Field>
+            </div>
           </CardBody>
         </Card>
       )}

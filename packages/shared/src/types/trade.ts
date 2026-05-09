@@ -4,6 +4,7 @@ export type MarketCondition = 'Trending' | 'Ranging' | 'Reversal' | 'Breakout';
 export type Outcome = 'WIN' | 'LOSS' | 'BREAKEVEN';
 export type PlanAdherence = 'YES' | 'MOSTLY' | 'NO';
 export type AssetClass = 'Forex' | 'Futures' | 'Crypto';
+export type ReviewStatus = 'PENDING' | 'REVIEWED' | 'FLAGGED';
 
 export type SetupType =
   | 'Liquidity Sweep + FVG'
@@ -145,4 +146,8 @@ export interface Trade {
 
   // Quality score (auto-calculated)
   qualityScore: QualityScore;
+
+  // Tagging & review
+  tags?: string[];
+  reviewStatus?: ReviewStatus;
 }

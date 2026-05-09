@@ -52,6 +52,13 @@ export default function TradeDetail() {
             </span>
             <span className={`px-2 py-0.5 rounded text-xs font-medium ${outcomeBg(trade.outcome)}`}>{trade.outcome}</span>
           </div>
+          {trade.tags && trade.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {trade.tags.map(tag => (
+                <span key={tag} className="px-2 py-0.5 rounded text-xs border bg-accent/10 text-accent border-accent/30">{tag}</span>
+              ))}
+            </div>
+          )}
           <p className="text-muted text-sm">{trade.date} · {trade.session} · {trade.setupType}</p>
         </div>
         <div className="flex gap-2">

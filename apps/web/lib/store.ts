@@ -5,17 +5,24 @@ import { persist } from 'zustand/middleware';
 import { v4 as uuid } from 'uuid';
 import type { Trade, DailyReview, WeeklyReview, MonthlyReview } from '@forex-journal/shared';
 import { calculateQualityScore } from '@forex-journal/shared';
+import { runMigration, STORAGE_KEY } from './migration';
+
+runMigration();
 
 interface JournalState {
   trades: Trade[];
   dailyReviews: DailyReview[];
   weeklyReviews: WeeklyReview[];
   monthlyReviews: MonthlyReview[];
+  tags: string[];
 
   addTrade: (trade: Omit<Trade, 'id' | 'createdAt' | 'updatedAt' | 'qualityScore'>) => Trade;
   updateTrade: (id: string, updates: Partial<Trade>) => void;
   deleteTrade: (id: string) => void;
   getTrade: (id: string) => Trade | undefined;
+
+  addTag: (tag: string) => void;
+  removeTag: (tag: string) => void;
 
   addDailyReview: (review: Omit<DailyReview, 'id'>) => void;
   updateDailyReview: (id: string, updates: Partial<DailyReview>) => void;
@@ -27,7 +34,7 @@ interface JournalState {
   addMonthlyReview: (review: Omit<MonthlyReview, 'id'>) => void;
   updateMonthlyReview: (id: string, updates: Partial<MonthlyReview>) => void;
 
-  importData: (data: { trades?: Trade[]; dailyReviews?: DailyReview[]; weeklyReviews?: WeeklyReview[]; monthlyReviews?: MonthlyReview[] }) => void;
+  importData: (data: { trades?: Trade[]; dailyReviews?: DailyReview[]; weeklyReviews?: WeeklyReview[]; monthlyReviews?: MonthlyReview[]; tags?: string[] }) => void;
   clearAll: () => void;
 }
 
@@ -38,6 +45,7 @@ export const useJournalStore = create<JournalState>()(
       dailyReviews: [],
       weeklyReviews: [],
       monthlyReviews: [],
+      tags: [],
 
       addTrade: (tradeData) => {
         const qualityScore = calculateQualityScore(tradeData);
@@ -66,6 +74,13 @@ export const useJournalStore = create<JournalState>()(
 
       getTrade: (id) => get().trades.find(t => t.id === id),
 
+      addTag: (tag) => set(s => ({ tags: s.tags.includes(tag) ? s.tags : [...s.tags, tag].sort() })),
+
+      removeTag: (tag) => set(s => ({
+        tags: s.tags.filter(t => t !== tag),
+        trades: s.trades.map(t => ({ ...t, tags: (t.tags ?? []).filter(tg => tg !== tag) })),
+      })),
+
       addDailyReview: (review) =>
         set(s => ({ dailyReviews: [{ ...review, id: uuid() }, ...s.dailyReviews] })),
 
@@ -92,11 +107,12 @@ export const useJournalStore = create<JournalState>()(
           dailyReviews: mergeById([...(data.dailyReviews ?? []), ...s.dailyReviews]),
           weeklyReviews: mergeById([...(data.weeklyReviews ?? []), ...s.weeklyReviews]),
           monthlyReviews: mergeById([...(data.monthlyReviews ?? []), ...s.monthlyReviews]),
+          tags: [...new Set([...(data.tags ?? []), ...s.tags])].sort(),
         })),
 
-      clearAll: () => set({ trades: [], dailyReviews: [], weeklyReviews: [], monthlyReviews: [] }),
+      clearAll: () => set({ trades: [], dailyReviews: [], weeklyReviews: [], monthlyReviews: [], tags: [] }),
     }),
-    { name: 'forex-journal' }
+    { name: STORAGE_KEY }
   )
 );
 

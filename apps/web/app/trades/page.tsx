@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useJournalStore } from '@/lib/store';
 import { Button } from '@/components/ui/Button';
 import { formatCurrency, outcomeBg, scoreBg } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 const PAIRS = ['All', 'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'NZD/USD', 'USD/CAD', 'EUR/GBP', 'EUR/JPY', 'GBP/JPY', 'XAU/USD', 'Other'];
 const OUTCOMES = ['All', 'WIN', 'LOSS', 'BREAKEVEN'];
@@ -12,11 +13,12 @@ const SESSIONS = ['All', 'Asian', 'London', 'New York', 'London-NY Overlap'];
 const DIRECTIONS = ['All', 'LONG', 'SHORT'];
 
 export default function TradeHistory() {
-  const { trades, deleteTrade } = useJournalStore();
+  const { trades, deleteTrade, tags: allTags } = useJournalStore();
   const [pair, setPair] = useState('All');
   const [outcome, setOutcome] = useState('All');
   const [session, setSession] = useState('All');
   const [direction, setDirection] = useState('All');
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'pnl' | 'score'>('date');
 
@@ -27,6 +29,7 @@ export default function TradeHistory() {
         (outcome === 'All' || t.outcome === outcome) &&
         (session === 'All' || t.session === session) &&
         (direction === 'All' || t.direction === direction) &&
+        (!activeTag || (t.tags ?? []).includes(activeTag)) &&
         (!search || t.pair.toLowerCase().includes(search.toLowerCase()) || t.setupType.toLowerCase().includes(search.toLowerCase()))
       )
       .sort((a, b) => {
@@ -51,6 +54,27 @@ export default function TradeHistory() {
         </div>
         <Link href="/trades/new"><Button>+ New Trade</Button></Link>
       </div>
+
+      {/* Tag filter pills */}
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={() => setActiveTag(null)}
+            className={cn('px-2.5 py-1 rounded-full text-xs border transition-all', activeTag === null ? 'bg-accent text-white border-accent' : 'bg-bg-elevated text-muted border-bg-border hover:border-accent/50')}
+          >
+            All
+          </button>
+          {allTags.map(tag => (
+            <button
+              key={tag}
+              onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+              className={cn('px-2.5 py-1 rounded-full text-xs border transition-all', activeTag === tag ? 'bg-accent/20 text-accent border-accent/50' : 'bg-bg-elevated text-muted border-bg-border hover:border-accent/30')}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-bg-card border border-bg-border rounded-lg p-4 flex flex-wrap gap-3">
@@ -90,7 +114,7 @@ export default function TradeHistory() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-muted text-xs border-b border-bg-border bg-bg-elevated">
-                  {['Date', 'Pair', 'Dir', 'Setup', 'Session', 'Entry', 'SL', 'TP3', 'Lot', 'Outcome', 'P&L $', 'Points', 'RR', 'Score', ''].map(h => (
+                  {['Date', 'Pair', 'Dir', 'Setup', 'Session', 'Entry', 'SL', 'TP3', 'Lot', 'Outcome', 'P&L $', 'Points', 'RR', 'Score', 'Tags', ''].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-medium whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -123,6 +147,13 @@ export default function TradeHistory() {
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${scoreBg(t.qualityScore?.total ?? 0)}`}>
                         {t.qualityScore?.total ?? 0}/10
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {(t.tags ?? []).map(tag => (
+                          <span key={tag} className="px-1.5 py-0.5 rounded text-xs bg-accent/10 text-accent border border-accent/20">{tag}</span>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex gap-1">
