@@ -46,9 +46,9 @@ export function calcContractSizing(params: {
   riskPercent: number;
   entry: number;
   stopLoss: number;
-  tp1: number;
-  tp2: number;
-  tp3: number;
+  tp1?: number;
+  tp2?: number;
+  tp3?: number;
   direction: 'LONG' | 'SHORT' | 'BUY' | 'SELL';
 }): ContractSizingResult | null {
   const meta = getFuturesMeta(params.instrument);

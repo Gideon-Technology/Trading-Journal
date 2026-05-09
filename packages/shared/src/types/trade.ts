@@ -44,6 +44,12 @@ export interface TradeManagement {
   exitedEarly: boolean;
   exitReason: string;
   interferedUnnecessarily: boolean;
+  // Exit quality
+  tp1Hit?: boolean;
+  tp2Hit?: boolean;
+  tp3Hit?: boolean;
+  movedTpEmotionally?: boolean;
+  letWinnerBecomeLoss?: boolean;
 }
 
 export interface MistakeTracker {
@@ -157,5 +163,19 @@ export interface Trade {
   // Import tracking
   importBatchId?: string;
   importSource?: string;
-  outsidePlan?: boolean;   // true if trade was outside daily plan rules
+
+  // Plan compliance (auto-calculated when a DailyPlan exists for the trade date)
+  outsidePlan?: boolean;
+  outsidePlanReasons?: string[];
+  planComplianceScore?: number;  // 0–100
+
+  // Planned vs actual execution
+  plannedEntry?: number;
+  plannedStopLoss?: number;
+  plannedTP1?: number;
+  plannedTP2?: number;
+  plannedTP3?: number;
+  plannedRiskPercent?: number;
+  plannedRR?: number;
+  executionScore?: number;  // 0–100, auto-calculated
 }

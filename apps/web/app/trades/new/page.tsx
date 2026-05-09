@@ -134,6 +134,8 @@ const defaultForm = {
     partialTP2: false, partialTP2Percent: 30,
     runnerTP3: false, exitedEarly: false, exitReason: '',
     interferedUnnecessarily: false,
+    tp1Hit: false, tp2Hit: false, tp3Hit: false,
+    movedTpEmotionally: false, letWinnerBecomeLoss: false,
   },
 
   // Result
@@ -414,16 +416,30 @@ export default function NewTrade() {
               )}
               <Toggle label="Ran a runner to TP3" checked={form.management.runnerTP3} onChange={v => setNested('management', 'runnerTP3', v)} />
             </div>
-            <div className="border-t border-bg-border pt-3">
+            <div className="border-t border-bg-border pt-3 space-y-3">
               <Toggle label="Exited early (before TP)" checked={form.management.exitedEarly} onChange={v => setNested('management', 'exitedEarly', v)} />
               {form.management.exitedEarly && (
-                <div className="mt-3">
-                  <Field label="Why did you exit early?">
-                    <Textarea value={form.management.exitReason}
-                      onChange={e => setNested('management', 'exitReason', e.target.value)} />
-                  </Field>
-                </div>
+                <Field label="Why did you exit early?">
+                  <Textarea value={form.management.exitReason}
+                    onChange={e => setNested('management', 'exitReason', e.target.value)} />
+                </Field>
               )}
+            </div>
+            <div className="border-t border-bg-border pt-3 space-y-3">
+              <p className="text-muted text-xs font-semibold uppercase tracking-wider">Exit Quality</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {([
+                  ['tp1Hit', 'TP1 was hit'],
+                  ['tp2Hit', 'TP2 was hit'],
+                  ['tp3Hit', 'TP3 was hit'],
+                  ['movedTpEmotionally', 'Moved TP emotionally'],
+                  ['letWinnerBecomeLoss', 'Let winner become a loss'],
+                ] as [string, string][]).map(([key, label]) => (
+                  <Toggle key={key} label={label}
+                    checked={!!((form.management as Record<string, unknown>)[key])}
+                    onChange={v => setNested('management', key, v)} />
+                ))}
+              </div>
             </div>
           </CardBody>
         </Card>

@@ -313,6 +313,40 @@ export default function CommandCenter() {
         )}
       </div>
 
+      {/* Plan violations */}
+      {todayTrades.some(t => t.outsidePlan) && (
+        <div className="bg-bg-card border border-loss/40 rounded-lg">
+          <div className="px-5 py-4 border-b border-bg-border flex items-center gap-2">
+            <span className="text-loss">⚠</span>
+            <p className="text-loss font-semibold text-sm">Plan Violations Today</p>
+          </div>
+          <div className="divide-y divide-bg-border">
+            {todayTrades.filter(t => t.outsidePlan).map(t => (
+              <Link key={t.id} href={`/trades/${t.id}`}>
+                <div className="px-5 py-3 hover:bg-bg-elevated transition-colors">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm text-text">{t.pair}</span>
+                      <span className={`text-xs font-mono font-bold ${t.direction === 'LONG' || t.direction === 'BUY' ? 'text-win' : 'text-loss'}`}>{t.direction}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-xs font-semibold ${
+                        (t.planComplianceScore ?? 0) >= 80 ? 'bg-win/10 text-win' :
+                        (t.planComplianceScore ?? 0) >= 50 ? 'bg-breakeven/10 text-breakeven' : 'bg-loss/10 text-loss'
+                      }`}>{t.planComplianceScore ?? 0}/100</span>
+                    </div>
+                    <span className="text-muted text-xs">→</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {(t.outsidePlanReasons ?? []).map((r, i) => (
+                      <p key={i} className="text-loss text-xs">— {r}</p>
+                    ))}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Next actions */}
       <div className="bg-bg-card border border-bg-border rounded-lg p-5">
         <p className="font-semibold text-sm text-text mb-3">Next Required Actions</p>

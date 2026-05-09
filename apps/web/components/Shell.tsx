@@ -23,6 +23,7 @@ const NAV_LINKS = [
   { href: '/plan', label: 'Trade Plan' },
   { href: '/', label: 'Dashboard' },
   { href: '/trades/new', label: 'New Trade' },
+  { href: '/quick-log', label: 'Quick Log' },
   { href: '/trades', label: 'Trade History' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/playbook', label: 'Playbook' },

@@ -199,6 +199,100 @@ export default function TradeDetail() {
         </Card>
       )}
 
+      {/* Execution Quality */}
+      {(trade.plannedEntry || trade.plannedStopLoss || trade.executionScore !== undefined) && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-sm">Execution Quality</p>
+              {trade.executionScore !== undefined && (
+                <span className={`text-sm font-bold font-mono ${
+                  trade.executionScore >= 80 ? 'text-win' :
+                  trade.executionScore >= 60 ? 'text-breakeven' : 'text-loss'
+                }`}>{trade.executionScore}/100</span>
+              )}
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="grid grid-cols-2 gap-3">
+              {trade.plannedEntry && (
+                <div className="bg-bg-elevated rounded p-3">
+                  <p className="text-muted text-xs mb-1">Planned Entry</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-muted text-sm">{trade.plannedEntry}</span>
+                    <span className="text-muted text-xs">→</span>
+                    <span className="font-mono text-accent text-sm">{trade.entryPrice}</span>
+                    {trade.plannedEntry && trade.entryPrice && Math.abs(trade.entryPrice - trade.plannedEntry) > 0 && (
+                      <span className="text-xs text-muted">(diff: {(trade.entryPrice - trade.plannedEntry).toFixed(5)})</span>
+                    )}
+                  </div>
+                </div>
+              )}
+              {trade.plannedStopLoss && (
+                <div className="bg-bg-elevated rounded p-3">
+                  <p className="text-muted text-xs mb-1">Planned SL</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-muted text-sm">{trade.plannedStopLoss}</span>
+                    <span className="text-muted text-xs">→</span>
+                    <span className="font-mono text-loss text-sm">{trade.stopLoss}</span>
+                  </div>
+                </div>
+              )}
+              {trade.plannedRiskPercent && (
+                <div className="bg-bg-elevated rounded p-3">
+                  <p className="text-muted text-xs mb-1">Planned Risk</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-muted text-sm">{trade.plannedRiskPercent}%</span>
+                    <span className="text-muted text-xs">→</span>
+                    <span className={`font-mono text-sm ${(trade.riskPercent ?? 0) > (trade.plannedRiskPercent ?? 0) ? 'text-loss' : 'text-win'}`}>{trade.riskPercent}%</span>
+                  </div>
+                </div>
+              )}
+              {trade.plannedRR && (
+                <div className="bg-bg-elevated rounded p-3">
+                  <p className="text-muted text-xs mb-1">Planned R:R</p>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-muted text-sm">{trade.plannedRR}:1</span>
+                    <span className="text-muted text-xs">→</span>
+                    <span className={`font-mono text-sm ${(trade.rrAchieved ?? 0) >= (trade.plannedRR ?? 0) ? 'text-win' : 'text-loss'}`}>{trade.rrAchieved?.toFixed(1)}:1</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* Plan Compliance */}
+      {trade.planComplianceScore !== undefined && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-sm">Plan Compliance</p>
+              <span className={`text-sm font-bold font-mono ${
+                trade.planComplianceScore >= 80 ? 'text-win' :
+                trade.planComplianceScore >= 50 ? 'text-breakeven' : 'text-loss'
+              }`}>{trade.planComplianceScore}/100</span>
+            </div>
+          </CardHeader>
+          <CardBody>
+            {trade.outsidePlan && trade.outsidePlanReasons && trade.outsidePlanReasons.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-loss text-xs font-medium">Violations against daily plan:</p>
+                {trade.outsidePlanReasons.map((reason, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 rounded bg-loss/5 border border-loss/20">
+                    <span className="text-loss text-xs mt-0.5">⚠</span>
+                    <p className="text-text text-xs">{reason}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-win text-sm">✓ Trade matched all plan rules</p>
+            )}
+          </CardBody>
+        </Card>
+      )}
+
       {/* Notes */}
       <Card>
         <CardHeader><p className="font-semibold text-sm">Review Notes</p></CardHeader>

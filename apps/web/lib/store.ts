@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuid } from 'uuid';
 import type { Trade, DailyReview, WeeklyReview, MonthlyReview, DailyPlan, PlaybookSetup } from '@forex-journal/shared';
-import { calculateQualityScore } from '@forex-journal/shared';
+import { calculateQualityScore, checkPlanCompliance, calcExecutionScore } from '@forex-journal/shared';
 import { runMigration, STORAGE_KEY } from './migration';
 
 runMigration();
@@ -172,12 +172,19 @@ export const useJournalStore = create<JournalState>()(
 
       addTrade: (tradeData) => {
         const qualityScore = calculateQualityScore(tradeData);
+        const plan = get().dailyPlans.find(p => p.date === tradeData.date);
+        const compliance = plan ? checkPlanCompliance(tradeData, plan) : null;
         const trade: Trade = {
           ...tradeData,
           id: uuid(),
           qualityScore,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          ...(compliance && {
+            outsidePlan: compliance.outsidePlan,
+            outsidePlanReasons: compliance.outsidePlanReasons,
+            planComplianceScore: compliance.planComplianceScore,
+          }),
         } as Trade;
         set(s => ({ trades: [trade, ...s.trades] }));
         return trade;
@@ -185,11 +192,17 @@ export const useJournalStore = create<JournalState>()(
 
       updateTrade: (id, updates) => {
         set(s => ({
-          trades: s.trades.map(t =>
-            t.id === id
-              ? { ...t, ...updates, qualityScore: calculateQualityScore({ ...t, ...updates }), updatedAt: new Date().toISOString() }
-              : t
-          ),
+          trades: s.trades.map(t => {
+            if (t.id !== id) return t;
+            const merged = { ...t, ...updates };
+            const execScore = calcExecutionScore(merged);
+            return {
+              ...merged,
+              qualityScore: calculateQualityScore(merged),
+              executionScore: execScore >= 0 ? execScore : merged.executionScore,
+              updatedAt: new Date().toISOString(),
+            };
+          }),
         }));
       },
 

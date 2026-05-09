@@ -6,3 +6,5 @@ export * from './utils/stats';
 export * from './utils/export';
 export * from './utils/brokerImport';
 export * from './utils/futures';
+export * from './utils/planCompliance';
+export * from './utils/executionScore';
