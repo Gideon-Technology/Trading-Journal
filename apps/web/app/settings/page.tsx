@@ -5,6 +5,7 @@ import { useJournalStore } from '@/lib/store';
 import { tradesToCSV, exportJSON, downloadFile } from '@forex-journal/shared';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
+import { BrokerImport } from '@/components/BrokerImport';
 import { format } from 'date-fns';
 
 export default function Settings() {
@@ -92,11 +93,11 @@ export default function Settings() {
           </div>
           <div className="flex items-center justify-between p-3 bg-bg-elevated rounded-lg border border-bg-border">
             <div>
-              <p className="text-text text-sm font-medium">Extension Export</p>
-              <p className="text-muted text-xs">If you logged trades in the Chrome extension, import the JSON file here.</p>
+              <p className="text-text text-sm font-medium">Extension / JSON Backup</p>
+              <p className="text-muted text-xs">Import a JSON file exported from this app or the Chrome extension.</p>
             </div>
             <Button variant="secondary" onClick={() => fileRef.current?.click()}>
-              Import from Extension
+              Import JSON
             </Button>
           </div>
         </CardBody>
@@ -104,7 +105,7 @@ export default function Settings() {
 
       {/* Import */}
       <Card>
-        <CardHeader><p className="font-semibold text-sm">Import / Restore</p></CardHeader>
+        <CardHeader><p className="font-semibold text-sm">Import / Restore (JSON)</p></CardHeader>
         <CardBody className="space-y-4">
           <p className="text-muted text-sm">Import a JSON file exported from this app or the Chrome extension. New trades are merged with existing data — no duplicates.</p>
           <div
@@ -116,6 +117,19 @@ export default function Settings() {
             <p className="text-muted text-xs mt-1">fx-journal-YYYY-MM-DD.json</p>
           </div>
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+        </CardBody>
+      </Card>
+
+      {/* Broker CSV import */}
+      <Card>
+        <CardHeader>
+          <div>
+            <p className="font-semibold text-sm">Import from Broker (CSV)</p>
+            <p className="text-muted text-xs mt-0.5">Supports Topstep / NinjaTrader, MT4/5, Tradovate, IBKR, TradeStation</p>
+          </div>
+        </CardHeader>
+        <CardBody>
+          <BrokerImport />
         </CardBody>
       </Card>
 
