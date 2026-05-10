@@ -1,7 +1,7 @@
 import EditTrade from './EditTrade';
 
 export function generateStaticParams() {
-  return [];
+  return [{ id: '_' }];
 }
 
 export default function Page() {

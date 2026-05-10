@@ -1,0 +1,3 @@
+/trades/*/edit/  /trades/_/edit/  200
+/trades/*  /trades/_/  200
+/signals/*  /signals/_/  200
