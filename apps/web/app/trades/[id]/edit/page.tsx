@@ -1,9 +1,9 @@
-import TradeDetail from './TradeDetail';
+import EditTrade from './EditTrade';
 
 export function generateStaticParams() {
   return [];
 }
 
 export default function Page() {
-  return <TradeDetail />;
+  return <EditTrade />;
 }

@@ -1,9 +1,9 @@
-import TradeDetail from './TradeDetail';
+import SignalDetail from './SignalDetail';
 
 export function generateStaticParams() {
   return [];
 }
 
 export default function Page() {
-  return <TradeDetail />;
+  return <SignalDetail />;
 }
