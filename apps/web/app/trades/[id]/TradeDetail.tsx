@@ -47,18 +47,11 @@ export default function TradeDetail() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-xl font-bold">{trade.pair}</h1>
-            <span className={trade.direction === 'BUY' || trade.direction === 'LONG' ? 'text-win font-mono font-bold' : 'text-loss font-mono font-bold'}>
+            <span className={trade.direction === 'BUY' ? 'text-win font-mono font-bold' : 'text-loss font-mono font-bold'}>
               {trade.direction}
             </span>
             <span className={`px-2 py-0.5 rounded text-xs font-medium ${outcomeBg(trade.outcome)}`}>{trade.outcome}</span>
           </div>
-          {trade.tags && trade.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              {trade.tags.map(tag => (
-                <span key={tag} className="px-2 py-0.5 rounded text-xs border bg-accent/10 text-accent border-accent/30">{tag}</span>
-              ))}
-            </div>
-          )}
           <p className="text-muted text-sm">{trade.date} · {trade.session} · {trade.setupType}</p>
         </div>
         <div className="flex gap-2">
@@ -92,7 +85,7 @@ export default function TradeDetail() {
       <div className="grid grid-cols-4 gap-3">
         {[
           { label: 'P&L ($)', value: formatCurrency(trade.profitLossDollar), cls: trade.profitLossDollar >= 0 ? 'text-win' : 'text-loss' },
-          { label: 'P&L (pts)', value: `${trade.profitLossPoints > 0 ? '+' : ''}${trade.profitLossPoints}`, cls: trade.profitLossPoints >= 0 ? 'text-win' : 'text-loss' },
+          { label: 'P&L (pips)', value: `${trade.profitLossPips > 0 ? '+' : ''}${trade.profitLossPips}`, cls: trade.profitLossPips >= 0 ? 'text-win' : 'text-loss' },
           { label: 'RR Achieved', value: `${trade.rrAchieved?.toFixed(1)}:1`, cls: 'text-accent' },
           { label: 'Risk %', value: `${trade.riskPercent}%`, cls: 'text-text' },
         ].map(s => (
@@ -124,7 +117,7 @@ export default function TradeDetail() {
             {[
               { label: 'Entry', value: trade.entryPrice, cls: 'text-accent' },
               { label: 'Stop Loss', value: trade.stopLoss, cls: 'text-loss' },
-              { label: 'Position Size', value: trade.positionSize, cls: 'text-text' },
+              { label: 'Lot Size', value: trade.lotSize, cls: 'text-text' },
               { label: 'TP1 (1:2)', value: trade.tp1, cls: 'text-win' },
               { label: 'TP2 (1:3)', value: trade.tp2, cls: 'text-win' },
               { label: 'TP3 (1:5)', value: trade.tp3, cls: 'text-win' },
@@ -195,100 +188,6 @@ export default function TradeDetail() {
                   </span>
                 ))}
             </div>
-          </CardBody>
-        </Card>
-      )}
-
-      {/* Execution Quality */}
-      {(trade.plannedEntry || trade.plannedStopLoss || trade.executionScore !== undefined) && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-sm">Execution Quality</p>
-              {trade.executionScore !== undefined && (
-                <span className={`text-sm font-bold font-mono ${
-                  trade.executionScore >= 80 ? 'text-win' :
-                  trade.executionScore >= 60 ? 'text-breakeven' : 'text-loss'
-                }`}>{trade.executionScore}/100</span>
-              )}
-            </div>
-          </CardHeader>
-          <CardBody>
-            <div className="grid grid-cols-2 gap-3">
-              {trade.plannedEntry && (
-                <div className="bg-bg-elevated rounded p-3">
-                  <p className="text-muted text-xs mb-1">Planned Entry</p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-muted text-sm">{trade.plannedEntry}</span>
-                    <span className="text-muted text-xs">→</span>
-                    <span className="font-mono text-accent text-sm">{trade.entryPrice}</span>
-                    {trade.plannedEntry && trade.entryPrice && Math.abs(trade.entryPrice - trade.plannedEntry) > 0 && (
-                      <span className="text-xs text-muted">(diff: {(trade.entryPrice - trade.plannedEntry).toFixed(5)})</span>
-                    )}
-                  </div>
-                </div>
-              )}
-              {trade.plannedStopLoss && (
-                <div className="bg-bg-elevated rounded p-3">
-                  <p className="text-muted text-xs mb-1">Planned SL</p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-muted text-sm">{trade.plannedStopLoss}</span>
-                    <span className="text-muted text-xs">→</span>
-                    <span className="font-mono text-loss text-sm">{trade.stopLoss}</span>
-                  </div>
-                </div>
-              )}
-              {trade.plannedRiskPercent && (
-                <div className="bg-bg-elevated rounded p-3">
-                  <p className="text-muted text-xs mb-1">Planned Risk</p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-muted text-sm">{trade.plannedRiskPercent}%</span>
-                    <span className="text-muted text-xs">→</span>
-                    <span className={`font-mono text-sm ${(trade.riskPercent ?? 0) > (trade.plannedRiskPercent ?? 0) ? 'text-loss' : 'text-win'}`}>{trade.riskPercent}%</span>
-                  </div>
-                </div>
-              )}
-              {trade.plannedRR && (
-                <div className="bg-bg-elevated rounded p-3">
-                  <p className="text-muted text-xs mb-1">Planned R:R</p>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-muted text-sm">{trade.plannedRR}:1</span>
-                    <span className="text-muted text-xs">→</span>
-                    <span className={`font-mono text-sm ${(trade.rrAchieved ?? 0) >= (trade.plannedRR ?? 0) ? 'text-win' : 'text-loss'}`}>{trade.rrAchieved?.toFixed(1)}:1</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardBody>
-        </Card>
-      )}
-
-      {/* Plan Compliance */}
-      {trade.planComplianceScore !== undefined && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-sm">Plan Compliance</p>
-              <span className={`text-sm font-bold font-mono ${
-                trade.planComplianceScore >= 80 ? 'text-win' :
-                trade.planComplianceScore >= 50 ? 'text-breakeven' : 'text-loss'
-              }`}>{trade.planComplianceScore}/100</span>
-            </div>
-          </CardHeader>
-          <CardBody>
-            {trade.outsidePlan && trade.outsidePlanReasons && trade.outsidePlanReasons.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-loss text-xs font-medium">Violations against daily plan:</p>
-                {trade.outsidePlanReasons.map((reason, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2 rounded bg-loss/5 border border-loss/20">
-                    <span className="text-loss text-xs mt-0.5">⚠</span>
-                    <p className="text-text text-xs">{reason}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-win text-sm">✓ Trade matched all plan rules</p>
-            )}
           </CardBody>
         </Card>
       )}
