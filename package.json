@@ -9,7 +9,7 @@
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "dev:ext": "pnpm --filter extension dev",
-    "build:web": "pnpm --filter web build",
+    "build:web": "pnpm --filter web build && cp -r apps/web/out ./out",
     "build:ext": "pnpm --filter extension build"
   }
 }
